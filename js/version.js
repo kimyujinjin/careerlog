@@ -33,14 +33,10 @@ const VersionManager = {
                 <span class="company-btn-name">${esc(c.name)}</span>
                 <span class="version-company-count">${count}</span>
               </button>
-              <div class="company-item-actions">
-                <button title="이름 변경" onclick="VersionManager.editCompany('${c.id}')">✎</button>
-                <button title="삭제" onclick="VersionManager.deleteCompany('${c.id}')">✕</button>
-              </div>
             </div>`;
         }).join('');
 
-    tabsEl.innerHTML = addBtn + allBtn + divider + companyItems;
+    tabsEl.innerHTML = allBtn + divider + companyItems + addBtn;
   },
 
   selectCompany(companyId) {
@@ -50,6 +46,16 @@ const VersionManager = {
     if (titleEl) titleEl.textContent = company ? company.name : '이력서 관리';
     const searchInput = document.getElementById('vgrid-search-input');
     if (searchInput) searchInput.value = '';
+    const headerBtn = document.getElementById('vgrid-header-btn');
+    if (headerBtn) {
+      if (company) {
+        headerBtn.textContent = '+ 새 버전';
+        headerBtn.onclick = () => VersionManager.openCreateModal();
+      } else {
+        headerBtn.textContent = '+ 회사 추가';
+        headerBtn.onclick = () => VersionManager.openCreateCompanyModal();
+      }
+    }
     this.renderCompanySidebar();
     this.renderVersionGrid();
   },
@@ -63,6 +69,7 @@ const VersionManager = {
 
     // 전체 탭: 회사 카드 목록
     if (this.currentCompany === null) {
+      gridEl.className = 'vgrid';
       let filteredCompanies = q
         ? companies.filter(c => c.name.toLowerCase().includes(q))
         : companies;
@@ -85,6 +92,7 @@ const VersionManager = {
       filtered = filtered.filter(v => v.name.toLowerCase().includes(q));
     }
 
+    gridEl.className = 'vgrid vgrid--versions';
     gridEl.innerHTML = filtered.length === 0
       ? `<div class="vgrid-empty">
           <div class="empty-icon">📄</div>
@@ -113,12 +121,24 @@ const VersionManager = {
 
     return `
       <div class="vgrid-card" onclick="VersionManager.selectCompany('${company.id}')">
-        <div class="vgrid-card__tab"></div>
+        <div class="vgrid-card__tab">
+          <svg viewBox="0 0 120 20" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,20 L0,8 Q0,0 8,0 L70,0 Q90,0 100,8 Q112,16 120,20 Z" fill="#b99dfd"/>
+          </svg>
+        </div>
         <div class="vgrid-card__folder">
-          <div class="vgrid-card__inner-doc">
-            <div class="vgrid-card__inner-line"></div>
-            <div class="vgrid-card__inner-line short"></div>
-            <div class="vgrid-card__inner-line xshort"></div>
+          <div class="vgrid-card__docs-area">
+            <div class="vgrid-card__doc vgrid-card__doc--back">
+              <div class="vgrid-card__doc-line"></div>
+              <div class="vgrid-card__doc-line short"></div>
+              <div class="vgrid-card__doc-line xshort"></div>
+            </div>
+            <div class="vgrid-card__doc vgrid-card__doc--front">
+              <div class="vgrid-card__doc-line"></div>
+              <div class="vgrid-card__doc-line short"></div>
+              <div class="vgrid-card__doc-line xshort"></div>
+              <div class="vgrid-card__doc-line short"></div>
+            </div>
           </div>
           <div class="vgrid-card__actions" onclick="event.stopPropagation()">
             <button class="btn-icon" title="이름 변경" onclick="VersionManager.editCompany('${company.id}')">✎</button>
@@ -127,10 +147,6 @@ const VersionManager = {
           <div class="vgrid-card__info">
             <div class="vgrid-card__company-name">${esc(company.name)}</div>
             <div class="vgrid-card__resume-count">이력서 ${versionCount}개</div>
-            <div class="vgrid-card__meta">
-              ${statusChips}
-              ${updatedDate ? `<span class="vgrid-card__date">${updatedDate}</span>` : ''}
-            </div>
           </div>
         </div>
       </div>`;
@@ -223,31 +239,38 @@ const VersionManager = {
       ? `<span class="vcard-deadline${diff <= 3 ? ' urgent' : diff <= 7 ? ' warn' : ''}">${diff < 0 ? '마감' : diff === 0 ? 'D-Day' : `D-${diff}`}</span>`
       : '';
     const updatedDate = v.updatedAt
-      ? new Date(v.updatedAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) + ' 수정'
+      ? (() => { const d = new Date(v.updatedAt); return `${String(d.getFullYear()).slice(2)}. ${d.getMonth()+1}. ${d.getDate()}. 수정`; })()
       : '';
     const notes = v.notes ? esc(v.notes) : '';
     const resultHtml = v.result ? `<span class="vlist-card__result">${esc(v.result)}</span>` : '';
 
+    const profile = Store.getProfile();
+    const titles = profile.titles || [];
+    const selectedTitle = titles.find(t => t.id === v.selectedTitleId);
+    const role = selectedTitle ? selectedTitle.value : '';
+    const deadlineText = diff === null ? '-' : diff < 0 ? '마감' : diff === 0 ? 'D-Day' : `D-${diff}`;
+    const deadlineClass = diff !== null && diff <= 3 ? 'urgent' : diff !== null && diff <= 7 ? 'warn' : '';
+
     return `
       <div class="vlist-card" onclick="VersionManager.showVersion('${v.id}')">
-        <div class="vlist-card__header">
-          <div class="vlist-card__logo" style="background:${logoColor}">${initial}</div>
-          <div class="vlist-card__title-wrap">
-            <div class="vlist-card__name">${esc(v.name)}</div>
-            <div class="vlist-card__company">${esc(companyName)}</div>
+        <div class="vlist-card__hover-actions" onclick="event.stopPropagation()">
+          <button class="vlist-card__icon-btn" title="복사" onclick="VersionManager.duplicate('${v.id}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="vlist-card__icon-btn vlist-card__icon-btn--delete" title="삭제" onclick="VersionManager.delete('${v.id}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+        <div class="vlist-card__name">${esc(v.name)}</div>
+        ${role ? `<div class="vlist-card__role">${esc(role)}</div>` : ''}
+        <div class="vlist-card__meta">
+          <div class="vlist-card__meta-row">
+            <span class="vlist-card__meta-label">최종 수정</span>
+            <span class="vlist-card__meta-value">${updatedDate || '-'}</span>
           </div>
-        </div>
-        <div class="vlist-card__chips">
-          <span class="status-chip status-${v.status}">${statusLabel(v.status)}</span>
-          ${deadlineHtml}
-          ${resultHtml}
-        </div>
-        ${notes ? `<p class="vlist-card__notes">${notes}</p>` : '<p class="vlist-card__notes vlist-card__notes--empty">메모 없음</p>'}
-        <div class="vlist-card__footer">
-          <span class="vlist-card__date">${updatedDate}</span>
-          <div class="vlist-card__btns" onclick="event.stopPropagation()">
-            <button class="vlist-card__btn-outline" onclick="VersionManager.duplicate('${v.id}')">복사</button>
-            <button class="vlist-card__btn-primary" onclick="VersionManager.showVersion('${v.id}')">열기</button>
+          <div class="vlist-card__meta-row">
+            <span class="vlist-card__meta-label">제출 마감</span>
+            <span class="vlist-card__meta-value ${deadlineClass}">${v.deadline ? esc(v.deadline) + (diff !== null ? ` (${deadlineText})` : '') : '-'}</span>
           </div>
         </div>
       </div>`;
@@ -258,7 +281,7 @@ const VersionManager = {
   },
 
   // ── 버전 선택 → 워크스페이스 표시 ───────────────────
-  showVersion(id) {
+  showVersion(id, noPush = false) {
     Store.setActiveVersionId(id);
 
     document.getElementById('version-grid-view').classList.add('hidden');
@@ -267,14 +290,18 @@ const VersionManager = {
     this.renderVersionHeader(id);
     this.renderItemSelector(id);
     App.refreshPreview();
+
+    if (!noPush) history.pushState({ type: 'version', id }, '');
   },
 
   // ── 그리드로 돌아가기 ────────────────────────────────
-  backToGrid() {
+  backToGrid(noPush = false) {
     document.getElementById('version-workspace-view').classList.add('hidden');
     document.getElementById('version-grid-view').classList.remove('hidden');
     this.renderCompanySidebar();
     this.renderVersionGrid();
+
+    if (!noPush) history.pushState({ type: 'grid' }, '');
   },
 
   // ── 버전 헤더 (이름, 회사, 상태, 템플릿) ─────────────
@@ -283,22 +310,13 @@ const VersionManager = {
     if (!v) return;
     document.getElementById('version-header-bar').innerHTML = `
       <div class="vh-left">
-        <button class="vh-back" onclick="VersionManager.backToGrid()">← 목록으로</button>
         <input class="vh-name" value="${esc(v.name)}" placeholder="버전 이름"
           onblur="VersionManager.updateField('${id}', 'name', this.value)">
-        <select class="vh-company-select" onchange="VersionManager.changeVersionCompany('${id}', this.value)">
-          ${Store.listCompanies().map(c => `<option value="${c.id}" ${v.companyId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}
-        </select>
       </div>
       <div class="vh-right">
         <label class="vh-label">마감일</label>
         <input type="date" class="vh-date" value="${esc(v.deadline || '')}"
           onchange="VersionManager.updateField('${id}', 'deadline', this.value)">
-        <label class="vh-label">템플릿</label>
-        <select onchange="VersionManager.updateField('${id}', 'templateId', this.value)">
-          <option value="modern"  ${v.templateId==='modern'  ?'selected':''}>모던</option>
-          <option value="classic" ${v.templateId==='classic' ?'selected':''}>클래식</option>
-        </select>
         <label class="vh-label">상태</label>
         <select onchange="VersionManager.updateField('${id}', 'status', this.value)">
           ${['draft','ready','submitted'].map(s =>
@@ -306,7 +324,7 @@ const VersionManager = {
           ).join('')}
         </select>
         <button class="btn-ai btn-sm" onclick="AI.openDraftModal('${id}')">✨ AI 초안</button>
-        <button class="btn-primary btn-sm" onclick="App.print()">인쇄 / PDF</button>
+        <button class="btn-save btn-sm" onclick="VersionManager.saveVersion('${id}')">저장</button>
       </div>`;
   },
 
@@ -1131,11 +1149,20 @@ const VersionManager = {
     const version = Store.getVersion(versionId);
     if (!version) return;
     version[field] = value;
-    Store.saveVersion(version);
-    if (field === 'name' || field === 'status') {
-      this.renderVersionHeader(versionId);
-    }
+    // 저장 버튼 누르기 전까지는 메모리에만 임시 보관
+    this._draft = this._draft || {};
+    this._draft[versionId] = version;
     if (field === 'templateId') App.refreshPreview();
+  },
+
+  saveVersion(versionId) {
+    const version = this._draft?.[versionId] || Store.getVersion(versionId);
+    if (!version) return;
+    version.updatedAt = new Date().toISOString();
+    Store.saveVersion(version);
+    if (this._draft) delete this._draft[versionId];
+    this.renderVersionHeader(versionId);
+    showToast('저장되었습니다.');
   },
 
   changeVersionCompany(versionId, companyId) {
@@ -1176,6 +1203,17 @@ const VersionManager = {
   openCreateModal() {
     const companies = Store.listCompanies();
     const selectedCompany = this.currentCompany ? Store.getCompany(this.currentCompany) : null;
+    const profile = Store.getProfile();
+    const titles = profile.titles || [];
+    const titleField = titles.length > 0
+      ? `<div class="form-row">
+           <label>직군 선택 <span class="label-hint">(선택)</span></label>
+           <select id="nv-title">
+             <option value="">-- 선택 안 함 --</option>
+             ${titles.map(t => `<option value="${t.id}">${esc(t.value)}${t.label ? ' (' + esc(t.label) + ')' : ''}</option>`).join('')}
+           </select>
+         </div>`
+      : '';
 
     const companyField = selectedCompany
       ? `<div class="form-row">
@@ -1200,23 +1238,25 @@ const VersionManager = {
           <button class="modal-close" onclick="closeModal('new-version-modal')">✕</button>
         </div>
         <div class="modal-body">
-          <p class="modal-desc">버전을 만들면 마스터 데이터에서 이 버전에 포함할 항목을 선택할 수 있습니다.</p>
-          ${companyField}
+${companyField}
           <div class="form-row">
-            <label>버전 이름 <span class="label-hint">(선택 — 비우면 회사명으로 자동 생성)</span></label>
+            <label>공고명 <span class="label-hint">(선택 — 비우면 회사명으로 자동 생성)</span></label>
             <input id="nv-name" placeholder="예: 카카오페이 PO 지원용">
+          </div>
+          <div class="form-row">
+            <label>이력서 타이틀 <span class="label-hint">(선택)</span></label>
+            <input id="nv-resume-title" placeholder="예: Product Owner · 5년차 · 핀테크">
+          </div>
+          ${titleField}
+          <div class="form-row">
+            <label>공고 링크 <span class="label-hint">(선택)</span></label>
+            <input id="nv-job-url" type="url" placeholder="https://...">
           </div>
           <div class="form-row">
             <label>지원 마감일 (선택)</label>
             <input id="nv-deadline" type="date">
           </div>
-          <div class="form-row">
-            <label>템플릿</label>
-            <select id="nv-template">
-              <option value="modern">모던</option>
-              <option value="classic">클래식</option>
-            </select>
-          </div>
+          <input type="hidden" id="nv-template" value="modern">
         </div>
         <div class="modal-footer">
           <button class="btn-ghost" onclick="closeModal('new-version-modal')">취소</button>
@@ -1240,6 +1280,8 @@ const VersionManager = {
     const name = nameInput || (company ? company.name : '새 버전');
     const profile = Store.getProfile();
 
+    const titleEl = document.getElementById('nv-title');
+    const resumeTitleInput = document.getElementById('nv-resume-title');
     const version = createVersion({
       name,
       companyId,
@@ -1247,6 +1289,9 @@ const VersionManager = {
       deadline:      document.getElementById('nv-deadline').value,
       templateId:    document.getElementById('nv-template').value,
       baseProfileId: profile.id,
+      resumeTitle:   resumeTitleInput ? resumeTitleInput.value.trim() : '',
+      jobUrl:        (document.getElementById('nv-job-url')?.value.trim()) || '',
+      selectedTitleId: titleEl ? (titleEl.value || null) : null,
       selectedExperienceIds: [],
       selectedProjectIds:    [],
       selectedSkillGroupIds: [],

@@ -132,6 +132,8 @@ function createVersion(data = {}) {
     selectedEducationIds:  data.selectedEducationIds  || [],
     selectedCertIds:       data.selectedCertIds       || [],
     overrides: data.overrides || {},
+    resumeTitle: data.resumeTitle || '',  // 이력서 타이틀 (선택)
+    jobUrl: data.jobUrl || '',            // 공고 링크 (선택)
     deadline: data.deadline || '',  // 지원 마감일 (선택)
     notes: data.notes || '',
     appliedAt: data.appliedAt || '',

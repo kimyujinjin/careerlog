@@ -78,13 +78,11 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 
 /* ── 버전 회사 사이드바 ────────────────────────────────── */
-.version-company-tabs { display: flex; flex-direction: column; gap: 3px; }
-
 .btn-add-company {
   display: block; width: 100%; text-align: left;
   padding: 9px 14px; border: 1.5px dashed #c8cfe0; background: none;
   border-radius: 10px; color: #8a93b0; font-size: 15px; font-weight: 600;
-  margin-bottom: 6px; transition: all 0.15s;
+  margin-top: 12px; transition: all 0.15s;
 }
 .btn-add-company:hover { border-color: #5500ff; color: #5500ff; background: #f5f0ff; }
 
@@ -111,7 +109,7 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 
 .version-company-btn {
   display: flex; align-items: center; justify-content: space-between;
-  flex: 1; min-width: 0; text-align: left;
+  width: 100%; min-width: 0; text-align: left;
   padding: 10px 14px; border: none; background: none;
   font-size: 16px; color: #8a93b0; border-radius: 10px;
   font-weight: 500; transition: all 0.15s; gap: 6px;
@@ -169,108 +167,149 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .vgrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
 }
+.vgrid.vgrid--versions {
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 1200px) { .vgrid.vgrid--versions { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 860px)  { .vgrid.vgrid--versions { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .vgrid.vgrid--versions { grid-template-columns: 1fr; } }
 
 /* ── 폴더형 카드 ──────────────────────────────────────── */
 .vgrid-card {
   position: relative;
   cursor: pointer;
-  transition: transform 0.18s, filter 0.18s;
+  transition: transform 0.2s, box-shadow 0.2s;
   display: flex; flex-direction: column;
 }
-.vgrid-card:hover  { transform: translateY(-4px); filter: brightness(0.97); }
-.vgrid-card:active { transform: translateY(-1px); }
+.vgrid-card:hover  { transform: translateY(-6px); }
+.vgrid-card:active { transform: translateY(-2px); }
 
-/* 폴더 탭 (상단 왼쪽 귀퉁이) */
+/* 폴더 탭 */
 .vgrid-card__tab {
-  width: 52%; height: 16px;
-  background: #d8d0f0;
-  border-radius: 10px 10px 0 0;
-  margin-left: 0;
+  width: calc(28% + 20px); height: 20px;
+  background: transparent;
   position: relative; z-index: 1;
+  overflow: visible;
 }
-.vgrid-card:hover .vgrid-card__tab { background: #c5b8f0; }
+.vgrid-card__tab svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
 
 /* 폴더 본체 */
 .vgrid-card__folder {
   flex: 1;
-  background: #eceef4;
-  border-radius: 0 14px 14px 14px;
-  padding: 18px 18px 16px;
-  display: flex; flex-direction: column; justify-content: flex-end;
-  min-height: 160px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  background: linear-gradient(170deg, #b99dfd 0%, #7c3aed 100%);
+  border-radius: 0 12px 12px 12px;
+  padding: 0;
+  display: flex; flex-direction: column;
+  min-height: 210px;
+  box-shadow: 0 6px 24px rgba(109,40,217,0.28), inset 0 1px 0 rgba(255,255,255,0.25);
   position: relative; overflow: hidden;
 }
-.vgrid-card:hover .vgrid-card__folder { background: #e4e7f0; }
+.vgrid-card:hover .vgrid-card__folder {
+  background: linear-gradient(170deg, #ac90fb 0%, #6d28d9 100%);
+  box-shadow: 0 10px 32px rgba(109,40,217,0.42), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.vgrid-card:hover .vgrid-card__info { background: linear-gradient(135deg, #7032e0 0%, #6025cc 100%); }
 
-/* 폴더 내부 문서 미리보기 */
-.vgrid-card__inner-doc {
+/* 서류 수납 영역 — 폴더 본체와 동일한 밝은 색 */
+.vgrid-card__docs-area {
+  position: relative;
+  flex: 0 0 110px;
+  display: flex; align-items: flex-end; justify-content: center;
+  overflow: hidden;
+}
+
+/* 서류 1장 */
+.vgrid-card__doc {
   position: absolute;
-  top: 14px; left: 50%; transform: translateX(-50%);
-  width: 68%; background: white;
-  border-radius: 8px 8px 0 0;
-  padding: 10px 12px 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.09);
-  display: flex; flex-direction: column; gap: 6px;
+  background: white;
+  border-radius: 6px 6px 0 0;
+  padding: 12px 14px 0;
+  display: flex; flex-direction: column; gap: 7px;
+  bottom: 0;
 }
-.vgrid-card__inner-line {
-  height: 5px; background: #ebebeb; border-radius: 3px;
+.vgrid-card__doc--back { display: none; }
+.vgrid-card__doc--front {
+  width: 86%;
+  left: 50%; transform: translateX(-50%);
+  background: linear-gradient(160deg, #ffffff 0%, #f3f0ff 100%);
+  z-index: 2;
+  padding-bottom: 20px;
+  box-shadow: 0 -2px 10px rgba(109,40,217,0.12);
 }
-.vgrid-card__inner-line.short { width: 55%; }
-.vgrid-card__inner-line.xshort { width: 35%; }
+.vgrid-card:hover .vgrid-card__doc--front { transform: translateX(-50%); }
 
-/* 카드 하단 텍스트 */
+.vgrid-card__doc-line {
+  height: 6px; background: #e5e7eb; border-radius: 3px; width: 100%;
+}
+.vgrid-card__doc-line.short  { width: 65%; }
+.vgrid-card__doc-line.xshort { width: 42%; }
+
+/* 카드 하단 정보 — 진한 보라 */
 .vgrid-card__info {
-  position: relative; z-index: 1;
+  flex: 1;
+  padding: 16px 16px 18px;
   display: flex; flex-direction: column; gap: 3px;
+  position: relative; z-index: 3;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
 }
 .vgrid-card__name {
-  font-size: 17px; font-weight: 700; color: #1e2035;
+  font-size: 16px; font-weight: 700; color: white;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .vgrid-card__company {
-  font-size: 15px; color: #7a8299;
+  font-size: 14px; color: rgba(255,255,255,0.75);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* 전체 탭: 회사 카드 */
 .vgrid-card__company-name {
-  font-size: 20px; font-weight: 800; color: #1e2035; letter-spacing: -0.3px;
+  font-size: 17px; font-weight: 800; color: white; letter-spacing: -0.3px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .vgrid-card__resume-count {
-  font-size: 14px; font-weight: 600; color: #5500ff; margin-top: 2px;
+  font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.75);
 }
 .vgrid-card__meta {
-  display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap;
 }
-.vgrid-card__date { font-size: 14px; color: #a0a8bc; }
+.vgrid-card__date { font-size: 12px; color: rgba(255,255,255,0.55); }
 .vgrid-card__actions {
-  position: absolute; top: 10px; right: 10px;
+  position: absolute; bottom: 14px; right: 4px;
   display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s;
-  z-index: 2;
+  z-index: 4;
 }
 .vgrid-card:hover .vgrid-card__actions { opacity: 1; }
+.vgrid-card .btn-icon { color: rgba(255,255,255,0.8); }
+.vgrid-card .btn-icon:hover { background: rgba(255,255,255,0.15); color: white; }
 
 /* D-day 칩 */
 .vcard-deadline {
-  font-size: 13px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
-  background: rgba(85,0,255,0.12); color: #5500ff;
+  font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+  background: rgba(255,255,255,0.25); color: white;
 }
-.vcard-deadline.warn   { background: rgba(224,123,0,0.12); color: #e07b00; }
-.vcard-deadline.urgent { background: rgba(224,62,62,0.12);  color: #e03e3e; }
+.vcard-deadline.warn   { background: rgba(255,200,80,0.35); color: #fff3b0; }
+.vcard-deadline.urgent { background: rgba(255,100,100,0.35); color: #ffd0d0; }
 
 /* ── 이력서 리스트 카드 ───────────────────────────────── */
 .vlist-card {
   background: white; border-radius: 16px;
   border: 1.5px solid #e8ebf4;
   padding: 20px;
-  display: flex; flex-direction: column; gap: 14px;
+  display: flex; flex-direction: column; gap: 10px;
   cursor: pointer;
   transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  aspect-ratio: 3 / 4;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  width: 100%;
 }
 .vlist-card:hover {
   box-shadow: 0 8px 24px rgba(85,0,255,0.1);
@@ -287,14 +326,43 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
   font-size: 20px; font-weight: 800; color: white; flex-shrink: 0;
 }
 .vlist-card__title-wrap { flex: 1; min-width: 0; }
+.vlist-card__hover-actions {
+  position: absolute; top: 10px; right: 10px;
+  display: flex; gap: 4px;
+  opacity: 0; transition: opacity 0.15s;
+}
+.vlist-card:hover .vlist-card__hover-actions { opacity: 1; }
+.vlist-card__icon-btn {
+  width: 28px; height: 28px; border-radius: 8px;
+  border: 1px solid #e8ebf4; background: white;
+  display: flex; align-items: center; justify-content: center;
+  color: #8a93b0; cursor: pointer; transition: all 0.15s;
+}
+.vlist-card__icon-btn:hover { background: #f4f6fb; color: #1e2035; border-color: #c8cfe0; }
+.vlist-card__icon-btn--delete:hover { background: #fff0f0; color: #e03e3e; border-color: #ffcdd2; }
+
 .vlist-card__name {
   font-size: 18px; font-weight: 800; color: #1e2035;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  letter-spacing: -0.3px;
+  word-break: break-word; white-space: normal;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden; letter-spacing: -0.3px; line-height: 1.4;
 }
-.vlist-card__company {
-  font-size: 14px; color: #9ba3b8; margin-top: 2px;
+.vlist-card__role {
+  font-size: 15px; color: #5500ff; font-weight: 600;
 }
+.vlist-card__meta {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: auto; padding-top: 10px;
+  border-top: 1px solid #f0f2f8;
+}
+.vlist-card__meta-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px;
+}
+.vlist-card__meta-label { color: #a0a8bc; }
+.vlist-card__meta-value { color: #3d4570; font-weight: 500; }
+.vlist-card__meta-value.urgent { color: #e03e3e; font-weight: 700; }
+.vlist-card__meta-value.warn   { color: #e07b00; font-weight: 700; }
 
 .vlist-card__chips {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
@@ -606,6 +674,13 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
   white-space: nowrap;
 }
 .btn-primary:hover { background: #f5f5f5; border-color: #c8c8c8; }
+.btn-save {
+  padding: 9px 20px; background: #5500ff; color: white;
+  border: 1.5px solid #5500ff; border-radius: 20px;
+  font-size: 16px; font-weight: 600; transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-save:hover { background: #4400cc; border-color: #4400cc; }
 .btn-ghost {
   padding: 9px 20px; background: white; color: #1a1a1a;
   border: 1.5px solid #e0e0e0; border-radius: 20px;
@@ -700,10 +775,10 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 .form-hint .btn-link { font-size: 14px; }
 
 /* 상태 칩 */
-.status-chip { font-size: 13px; padding: 3px 9px; border-radius: 20px; font-weight: 700; white-space: nowrap; }
-.status-draft     { background: #fff3e0; color: #e07b00; }
-.status-ready     { background: #e8f5e9; color: #2e7d32; }
-.status-submitted { background: #e8f0ff; color: #4400cc; }
+.status-chip { font-size: 12px; padding: 2px 8px; border-radius: 20px; font-weight: 700; white-space: nowrap; }
+.status-draft     { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); }
+.status-ready     { background: rgba(100,255,160,0.25); color: #b8ffd6; }
+.status-submitted { background: rgba(255,255,255,0.3); color: white; }
 
 /* ── 토스트 ────────────────────────────────────────── */
 .toast {
@@ -725,56 +800,45 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 
 /* ── 헤더 ── */
-.r-header { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1.5px solid #1a1a1a; }
+.r-header { margin-bottom: 32px; padding-bottom: 24px; }
 .r-header__top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
 .r-header__left { display: flex; flex-direction: column; gap: 4px; }
+.r-resume-title { font-size: 13px; font-weight: 600; color: #5500ff; letter-spacing: 0.5px; margin-bottom: 6px; }
 .r-name { font-size: 34px; font-weight: 800; letter-spacing: -1px; color: #1a1a1a; line-height: 1.1; }
 .r-title { font-size: 16px; color: #666; font-weight: 500; margin-top: 6px; }
-.r-contact { font-size: 14px; color: #666; text-align: right; line-height: 1.9; white-space: nowrap; }
+.r-contact { font-size: 14px; color: #666; line-height: 1.9; margin-bottom: 16px; }
 .r-summary { font-size: 15px; color: #333; line-height: 1.8; border-left: 3px solid #1a1a1a; padding-left: 14px; }
 
 /* ── 섹션 공통 ── */
 .r-section { margin-bottom: 36px; }
 .r-section h2 {
-  font-size: 13px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 2px; color: #1a1a1a;
+  font-size: 24px; font-weight: 700;
+  letter-spacing: -0.5px; color: #1a1a1a;
   margin-bottom: 18px; padding-bottom: 8px;
   border-bottom: 1.5px solid #1a1a1a;
 }
 
 /* ── 경력 아이템 ── */
-.r-item { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid #ebebeb; }
+.r-item { margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid #e8e8e8; }
 .r-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-.r-item-header {
-  display: flex; align-items: baseline;
-  justify-content: space-between; gap: 12px; margin-bottom: 4px;
-}
-.r-item-header__left { display: flex; align-items: baseline; gap: 8px; flex: 1; flex-wrap: wrap; }
-.r-company { font-weight: 800; font-size: 17px; color: #1a1a1a; }
-.r-dept { font-size: 14px; color: #888; font-weight: 400; }
-.r-role-line { font-size: 14px; color: #5500ff; font-weight: 600; margin-bottom: 8px; }
-.r-period { font-size: 13px; color: #999; white-space: nowrap; flex-shrink: 0; }
-.r-desc { color: #444; font-size: 14px; margin-bottom: 10px; line-height: 1.75; }
-.r-item--inline { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.r-exp-company-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #e8e8e8; }
+.r-exp-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; flex-shrink: 0; }
+.r-exp-company-info { display: flex; flex-direction: column; gap: 4px; }
+.r-company { font-weight: 800; font-size: 18px; color: #1a1a1a; }
+.r-exp-meta { font-size: 15px; color: #555; display: flex; align-items: center; flex-wrap: wrap; gap: 0; }
+.r-meta-sep { color: #ccc; margin: 0 6px; font-weight: 400; }
+.r-desc { color: #444; font-size: 15px; margin-bottom: 10px; line-height: 1.75; }
 .resume-wrap ul { padding-left: 18px; margin-bottom: 4px; }
-.resume-wrap ul li { font-size: 14px; color: #333; margin-bottom: 5px; line-height: 1.65; }
+.resume-wrap ul li { font-size: 15px; color: #333; margin-bottom: 5px; line-height: 1.65; }
 
-/* ── 프로젝트 ── */
-.r-proj-section { margin-top: 16px; display: flex; flex-direction: column; gap: 18px; }
-.r-proj-item { padding-left: 16px; border-left: 2px solid #ddd; }
-.r-proj-header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-.r-proj-name { font-weight: 700; font-size: 15px; color: #1a1a1a; }
-.r-proj-period { font-size: 13px; color: #999; white-space: nowrap; }
-.r-proj-role-text { font-size: 13px; color: #5500ff; font-weight: 500; margin-bottom: 8px; }
-.r-proj-block { margin-bottom: 8px; }
-.r-proj-label {
-  display: inline-block; font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.8px; color: #999;
-  margin-bottom: 4px;
-}
-.r-proj-block ul { padding-left: 16px; margin: 0; }
-.r-proj-block ul li { font-size: 14px; color: #333; margin-bottom: 4px; }
-.r-proj-desc { font-size: 14px; color: #444; line-height: 1.7; margin: 0; }
+/* ── 경력 내 프로젝트 ── */
+.r-exp-projs { display: flex; flex-direction: column; gap: 24px; }
+.r-exp-proj { }
+.r-exp-proj__name { font-weight: 700; font-size: 16px; color: #1a1a1a; margin-bottom: 4px; }
+.r-exp-proj__meta { font-size: 15px; color: #555; display: flex; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.r-exp-proj__line { font-size: 15px; color: #444; line-height: 1.75; margin-bottom: 4px; }
+.r-exp-proj__label { font-weight: 600; color: #333; }
+.r-exp-total { font-size: 15px; font-weight: 400; color: #888; margin-left: 10px; text-transform: none; letter-spacing: 0; }
 .r-tech { font-size: 13px; color: #999; margin-top: 8px; }
 
 /* ── 성과 뱃지 ── */

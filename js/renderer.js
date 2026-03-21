@@ -28,7 +28,7 @@ function tagBadges(arr) {
 }
 
 // ── 섹션 렌더러 ───────────────────────────────────────
-function renderPersonal(p) {
+function renderPersonal(p, resumeTitle) {
   const contacts = [
     p.phone    ? esc(p.phone) : '',
     p.email    ? esc(p.email) : '',
@@ -38,13 +38,9 @@ function renderPersonal(p) {
   ].filter(Boolean).join('  ·  ');
   return `
   <div class="r-header">
-    <div class="r-header__top">
-      <div class="r-header__left">
-        <h1 class="r-name">${esc(p.name)}</h1>
-        ${p.title ? `<p class="r-title">${esc(p.title)}</p>` : ''}
-      </div>
-      ${contacts ? `<div class="r-contact">${contacts}</div>` : ''}
-    </div>
+    <h1 class="r-name">${esc(resumeTitle || p.name)}</h1>
+    ${p.title ? `<p class="r-title">${esc(p.title)}</p>` : ''}
+    ${contacts ? `<p class="r-contact">${contacts}</p>` : ''}
     ${p.summary ? `<div class="r-summary">${esc(p.summary).replace(/\n/g,'<br>')}</div>` : ''}
   </div>`;
 }
@@ -65,58 +61,83 @@ function renderProjectItem(p) {
     </div>`;
 }
 
+function renderExpProjectItem(p) {
+  const period = formatPeriod(p.startDate, p.endDate);
+  const metaparts = [period, p.role ? esc(p.role) : ''].filter(Boolean);
+  if (p.tags && p.tags.filter(Boolean).length) metaparts.push(p.tags.filter(Boolean).map(esc).join(', '));
+  return `
+    <div class="r-exp-proj">
+      <p class="r-exp-proj__name">${esc(p.name)}</p>
+      ${metaparts.length ? `<p class="r-exp-proj__meta">${metaparts.join('<span class="r-meta-sep"> | </span>')}</p>` : ''}
+      ${p.description ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 배경</span> : ${esc(p.description).replace(/\n/g,'<br>')}</p>` : ''}
+      ${p.contributions && p.contributions.filter(Boolean).length ? p.contributions.filter(Boolean).map(c => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 주요실행</span> : ${esc(c)}</p>`).join('') : ''}
+      ${p.metrics && p.metrics.filter(Boolean).length ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 성과</span> : ${p.metrics.filter(Boolean).map(esc).join(', ')}</p>` : ''}
+    </div>`;
+}
+
 function renderExperiences(experiences, projects) {
   if (!experiences || experiences.length === 0) return '';
-  // 경력에 속하지 않은 독립 프로젝트 (experienceId 없거나 매칭 안 되는 것)
   const expIds = new Set(experiences.map(e => e.id));
-  const linkedProjects = (projects || []).filter(p => p.experienceId && expIds.has(p.experienceId));
-  const linkedIds = new Set(linkedProjects.map(p => p.id));
+  const linkedIds = new Set((projects || []).filter(p => p.experienceId && expIds.has(p.experienceId)).map(p => p.id));
   const floatingProjects = (projects || []).filter(p => !linkedIds.has(p.id));
 
   const items = experiences.map(e => {
     const expProjects = (projects || []).filter(p => p.experienceId === e.id);
+    const metaParts = [
+      formatPeriod(e.startDate, e.endDate, e.isCurrent),
+      e.role ? esc(e.role) : '',
+      e.department ? esc(e.department) : '',
+    ].filter(Boolean);
     const projBlock = expProjects.length === 0 ? '' : `
-      <div class="r-proj-section">
-        ${expProjects.map(renderProjectItem).join('')}
+      <div class="r-exp-projs">
+        ${expProjects.map(renderExpProjectItem).join('')}
       </div>`;
     return `
     <div class="r-item">
-      <div class="r-item-header">
-        <div class="r-item-header__left">
+      <div class="r-exp-company-row">
+        ${e.logo ? `<img class="r-exp-logo" src="${esc(e.logo)}" alt="">` : ''}
+        <div class="r-exp-company-info">
           <span class="r-company">${esc(e.company)}</span>
-          ${e.department ? `<span class="r-dept">${esc(e.department)}</span>` : ''}
+          ${metaParts.length ? `<p class="r-exp-meta">${metaParts.join('<span class="r-meta-sep"> | </span>')}</p>` : ''}
         </div>
-        <span class="r-period">${formatPeriod(e.startDate, e.endDate, e.isCurrent)}</span>
       </div>
-      ${e.role ? `<p class="r-role-line">${esc(e.role)}</p>` : ''}
       ${e.description ? `<p class="r-desc">${esc(e.description).replace(/\n/g,'<br>')}</p>` : ''}
       ${e.achievements && e.achievements.filter(Boolean).length ? bulletList(e.achievements) : ''}
       ${projBlock}
     </div>`;
   }).join('');
 
-  // 경력에 속하지 않은 독립 프로젝트는 별도 섹션으로
   const floatingBlock = floatingProjects.length === 0 ? '' : `
     <section class="r-section">
       <h2>프로젝트</h2>
       ${floatingProjects.map(p => `
         <div class="r-item">
-          <div class="r-item-header">
-            <div class="r-item-header__left">
-              <span class="r-company">${esc(p.name)}</span>
-              ${p.company ? `<span class="r-dept"> · ${esc(p.company)}</span>` : ''}
-              ${p.role ? `<span class="r-role">${esc(p.role)}</span>` : ''}
-            </div>
-            <span class="r-period">${formatPeriod(p.startDate, p.endDate)}</span>
-          </div>
-          ${p.description ? `<p class="r-desc">${esc(p.description)}</p>` : ''}
-          ${metricBadges(p.metrics)}
-          ${bulletList(p.contributions)}
-          ${p.techStack && p.techStack.length ? `<p class="r-tech"><strong>사용 도구:</strong> ${p.techStack.filter(Boolean).map(esc).join(', ')}</p>` : ''}
+          <p class="r-exp-proj__name">${esc(p.name)}</p>
+          ${p.description ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 배경</span> : ${esc(p.description)}</p>` : ''}
+          ${p.contributions && p.contributions.filter(Boolean).length ? p.contributions.filter(Boolean).map(c => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 주요실행</span> : ${esc(c)}</p>`).join('') : ''}
+          ${p.metrics && p.metrics.filter(Boolean).length ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 성과</span> : ${p.metrics.filter(Boolean).map(esc).join(', ')}</p>` : ''}
         </div>`).join('')}
     </section>`;
 
-  return `<section class="r-section"><h2>경력</h2>${items}</section>${floatingBlock}`;
+  // 총 경력 계산 (겹치는 기간 제거)
+  const intervals = experiences.map(e => {
+    const s = e.startDate ? new Date(e.startDate.length === 7 ? e.startDate + '-01' : e.startDate) : null;
+    const en = e.isCurrent ? new Date() : (e.endDate ? new Date(e.endDate.length === 7 ? e.endDate + '-01' : e.endDate) : null);
+    return (s && en && en >= s) ? [s.getTime(), en.getTime()] : null;
+  }).filter(Boolean).sort((a,b) => a[0]-b[0]);
+  let totalMs = 0;
+  let curStart = null, curEnd = null;
+  for (const [s,e] of intervals) {
+    if (curStart === null) { curStart = s; curEnd = e; }
+    else if (s <= curEnd) { curEnd = Math.max(curEnd, e); }
+    else { totalMs += curEnd - curStart; curStart = s; curEnd = e; }
+  }
+  if (curStart !== null) totalMs += curEnd - curStart;
+  const totalMonths = Math.floor(totalMs / (1000*60*60*24*30.44));
+  const yy = Math.floor(totalMonths / 12), mm = totalMonths % 12;
+  const totalLabel = yy > 0 ? (mm > 0 ? `${yy}년 ${mm}개월` : `${yy}년`) : (mm > 0 ? `${mm}개월` : '');
+
+  return `<section class="r-section"><h2>경력${totalLabel ? `<span class="r-exp-total">${totalLabel}</span>` : ''}</h2>${items}</section>${floatingBlock}`;
 }
 
 function renderSkills(list) {
@@ -158,9 +179,10 @@ function renderCertifications(list) {
 // ── 메인 렌더 함수 ────────────────────────────────────
 const Renderer = {
   render(resolvedData, templateId) {
-    const { resolved } = resolvedData;
+    const { resolved, version } = resolvedData;
+    const resumeTitle = version && version.resumeTitle ? version.resumeTitle : null;
     const body =
-      renderPersonal(resolved.personal) +
+      renderPersonal(resolved.personal, resumeTitle) +
       renderExperiences(resolved.experiences, resolved.projects) +
       renderSkills(resolved.skills) +
       renderEducations(resolved.educations) +

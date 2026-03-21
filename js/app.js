@@ -1,6 +1,6 @@
 // ── 앱 진입점 ─────────────────────────────────────────
 const App = {
-  currentView: 'master',
+  currentView: localStorage.getItem('activeView') || 'master',
   currentMasterTab: (['personal','summary','experience','project'].includes(localStorage.getItem('activeTab')) ? localStorage.getItem('activeTab') : 'personal'),
 
   init() {
@@ -14,6 +14,24 @@ const App = {
     VersionManager.renderVersionSidebar();
     this.updateVersionBadge();
     this.updateAiKeyBadge();
+
+    // 마지막으로 보던 뷰 복원
+    this.switchView(this.currentView, true);
+
+    // 브라우저 뒤로가기 처리
+    window.addEventListener('popstate', (e) => {
+      const state = e.state;
+      if (!state) return;
+      if (state.type === 'view') {
+        this.switchView(state.view, true);
+      } else if (state.type === 'version') {
+        App.switchView('versions', true);
+        VersionManager.showVersion(state.id, true);
+      } else if (state.type === 'grid') {
+        App.switchView('versions', true);
+        VersionManager.backToGrid(true);
+      }
+    });
   },
 
   _seedSampleData() {
@@ -56,19 +74,21 @@ const App = {
   },
 
   // ── 뷰 전환 (마스터 ↔ 버전 관리) ────────────────────
-  switchView(view) {
+  switchView(view, noPush = false) {
     this.currentView = view;
+    localStorage.setItem('activeView', view);
     document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
     document.getElementById('view-' + view).classList.add('active');
     document.getElementById('nav-' + view).classList.add('active');
 
     if (view === 'versions') {
-      // 항상 그리드 목록으로 진입
       document.getElementById('version-workspace-view').classList.add('hidden');
       document.getElementById('version-grid-view').classList.remove('hidden');
       VersionManager.renderVersionSidebar();
     }
+
+    if (!noPush) history.pushState({ type: 'view', view }, '');
   },
 
   updateVersionBadge() {
