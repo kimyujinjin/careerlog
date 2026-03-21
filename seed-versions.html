@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>버전 데이터 주입 중...</title></head>
+<body>
+<script>
+const versions = [
+  {
+    id: "v1",
+    name: "팀오투 PO 지원용",
+    targetCompany: "(주)팀오투",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-11-01T09:00:00.000Z",
+    updatedAt: "2025-11-05T14:30:00.000Z",
+    status: "submitted",
+    selectedTitleId: "t1",
+    selectedSummaryId: "s2",
+    selectedExperienceIds: ["exp1", "exp2", "exp3"],
+    expOrder: ["exp1", "exp2", "exp3"],
+    selectedProjectIds: ["p1", "p2", "p3", "p6"],
+    selectedSkillGroupIds: ["sk1", "sk2"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: ["cert1", "cert2"],
+    overrides: {},
+    deadline: "2025-11-10",
+    notes: "PO 직무 중심으로 여행 커머스 경험 강조. 데이터 기반 의사결정 사례 부각.",
+    appliedAt: "2025-11-08",
+    result: "서류 합격"
+  },
+  {
+    id: "v2",
+    name: "카카오 PM 지원용",
+    targetCompany: "카카오",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-11-15T10:00:00.000Z",
+    updatedAt: "2025-11-20T16:00:00.000Z",
+    status: "submitted",
+    selectedTitleId: "t2",
+    selectedSummaryId: "s1",
+    selectedExperienceIds: ["exp1", "exp2", "exp4"],
+    expOrder: ["exp1", "exp2", "exp4"],
+    selectedProjectIds: ["p1", "p4", "p6"],
+    selectedSkillGroupIds: ["sk1", "sk2", "sk3"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: ["cert2"],
+    overrides: {},
+    deadline: "2025-11-22",
+    notes: "대기업 PM 포지션. OKR/데이터 분석 역량 중심으로 구성. 카카오커머스 인턴 경험 포함.",
+    appliedAt: "2025-11-21",
+    result: "불합격"
+  },
+  {
+    id: "v3",
+    name: "여기어때 PO 지원용",
+    targetCompany: "여기어때컴퍼니",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-12-01T09:00:00.000Z",
+    updatedAt: "2025-12-03T11:00:00.000Z",
+    status: "ready",
+    selectedTitleId: "t1",
+    selectedSummaryId: "s2",
+    selectedExperienceIds: ["exp1", "exp2", "exp3"],
+    expOrder: ["exp1", "exp2", "exp3"],
+    selectedProjectIds: ["p1", "p2", "p5", "p6"],
+    selectedSkillGroupIds: ["sk1", "sk2"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: ["cert1"],
+    overrides: {},
+    deadline: "2025-12-15",
+    notes: "여행 도메인 특화. 숙박·레저 전환 개선 경험 최대한 부각.",
+    appliedAt: "",
+    result: ""
+  },
+  {
+    id: "v4",
+    name: "스타트업 CPO 지원용",
+    targetCompany: "비공개 스타트업",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-12-10T14:00:00.000Z",
+    updatedAt: "2025-12-10T14:00:00.000Z",
+    status: "draft",
+    selectedTitleId: "t3",
+    selectedSummaryId: "s1",
+    selectedExperienceIds: ["exp1", "exp2"],
+    expOrder: ["exp1", "exp2"],
+    selectedProjectIds: ["p1", "p2", "p3", "p6", "p7"],
+    selectedSkillGroupIds: ["sk1", "sk2", "sk3", "sk4"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: [],
+    overrides: {},
+    deadline: "",
+    notes: "리더십·전략 역량 중심으로 작성 예정. 사이드 프로젝트 포함해 실행력 강조.",
+    appliedAt: "",
+    result: ""
+  }
+];
+
+const raw = localStorage.getItem('rca_versions');
+const existing = raw ? JSON.parse(raw) : [];
+const merged = [...versions, ...existing.filter(v => !versions.find(nv => nv.id === v.id))];
+localStorage.setItem('rca_versions', JSON.stringify(merged));
+console.log('✅ 버전 데이터 주입 완료!');
+location.href = 'index.html';
+</script>
+<p>버전 데이터 주입 중...</p>
+</body>
+</html>

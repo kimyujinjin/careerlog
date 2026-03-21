@@ -5,6 +5,58 @@ const Editor = {
   // ── 개인정보 탭 ────────────────────────────────────
   renderPersonalTab(profile) {
     const p = profile.personal;
+
+    // 스킬
+    const skills = profile.skills || [];
+    const skillHtml = skills.length === 0
+      ? '<p class="empty-msg">스킬 그룹을 추가하세요.</p>'
+      : skills.map(s => `
+        <div class="list-card" data-id="${s.id}">
+          <div class="list-card__info">
+            <strong>${esc(s.category)}</strong>
+            <span class="period">${s.items.map(esc).join(' · ')}</span>
+          </div>
+          <div class="list-card__actions">
+            <button class="btn-sm" onclick="Editor.openSkillModal('${s.id}')">편집</button>
+            <button class="btn-sm btn-danger" onclick="Editor.deleteSkill('${s.id}')">삭제</button>
+          </div>
+        </div>`).join('');
+
+    // 학력
+    const edus = profile.educations || [];
+    const eduHtml = edus.length === 0
+      ? '<p class="empty-msg">학력을 추가하세요.</p>'
+      : edus.map(e => `
+        <div class="list-card" data-id="${e.id}">
+          <div class="list-card__info">
+            <strong>${esc(e.school)}</strong>
+            <span class="chip">${esc(e.degree)} ${esc(e.major)}</span>
+            ${e.graduationStatus ? `<span class="chip">${esc(e.graduationStatus)}</span>` : ''}
+            <span class="period">${formatPeriod(e.startDate, e.endDate)}</span>
+          </div>
+          <div class="list-card__actions">
+            <button class="btn-sm" onclick="Editor.openEduModal('${e.id}')">편집</button>
+            <button class="btn-sm btn-danger" onclick="Editor.deleteEdu('${e.id}')">삭제</button>
+          </div>
+        </div>`).join('');
+
+    // 자격증
+    const certs = profile.certifications || [];
+    const certHtml = certs.length === 0
+      ? '<p class="empty-msg">자격증/수료 내역을 추가하세요.</p>'
+      : certs.map(c => `
+        <div class="list-card" data-id="${c.id}">
+          <div class="list-card__info">
+            <strong>${esc(c.name)}</strong>
+            <span class="chip">${esc(c.issuer)}</span>
+            <span class="period">${esc(c.date)}</span>
+          </div>
+          <div class="list-card__actions">
+            <button class="btn-sm" onclick="Editor.openCertModal('${c.id}')">편집</button>
+            <button class="btn-sm btn-danger" onclick="Editor.deleteCert('${c.id}')">삭제</button>
+          </div>
+        </div>`).join('');
+
     const titles = profile.titles || [];
     const titleList = titles.length === 0
       ? '<p class="empty-msg">직책을 추가하면 버전별로 선택할 수 있습니다.</p>'
@@ -20,70 +72,85 @@ const Editor = {
           </div>
         </div>`).join('');
 
-    const summaries = profile.summaries || [];
-    const summaryList = summaries.length === 0
-      ? '<p class="empty-msg">자기소개를 추가하면 버전별로 선택할 수 있습니다.</p>'
-      : summaries.map(s => `
-        <div class="list-card" data-id="${s.id}">
-          <div class="list-card__info" style="flex-direction:column; align-items:flex-start; gap:4px;">
-            <strong>${esc(s.label) || '(제목 없음)'}</strong>
-            <span class="summary-preview">${esc(s.body).slice(0, 80)}${s.body.length > 80 ? '…' : ''}</span>
-          </div>
-          <div class="list-card__actions">
-            <button class="btn-sm" onclick="Editor.openSummaryModal('${s.id}')">편집</button>
-            <button class="btn-sm btn-danger" onclick="Editor.deleteSummary('${s.id}')">삭제</button>
-          </div>
-        </div>`).join('');
-
     return `
-    <div class="form-section">
+    <div class="exp-tab-section">
       <div class="section-header">
-        <h3>기본 정보</h3>
+        <h3>개인 정보</h3>
       </div>
-      <div class="form-row">
-        <label>이름</label>
-        <input type="text" id="p-name" value="${esc(p.name)}" placeholder="홍길동"
-          oninput="Editor.savePersonal()">
-      </div>
-      <div class="form-row">
-        <label>이메일</label>
-        <input type="email" id="p-email" value="${esc(p.email)}"
-          oninput="Editor.savePersonal()">
-      </div>
-      <div class="form-row">
-        <label>전화</label>
-        <input type="text" id="p-phone" value="${esc(p.phone)}"
-          oninput="Editor.savePersonal()">
-      </div>
-      <div class="form-row">
-        <label>위치</label>
-        <input type="text" id="p-location" value="${esc(p.location)}" placeholder="서울"
-          oninput="Editor.savePersonal()">
-      </div>
-      <div class="form-row">
-        <label>LinkedIn</label>
-        <input type="text" id="p-linkedin" value="${esc(p.linkedin)}"
-          oninput="Editor.savePersonal()">
-      </div>
-      <div class="form-row">
-        <label>GitHub</label>
-        <input type="text" id="p-github" value="${esc(p.github)}"
-          oninput="Editor.savePersonal()">
+    <div class="personal-tab-wrapper">
+
+      <div class="personal-col">
+        <div class="info-card">
+          <div class="section-header"><h3>기본 정보</h3></div>
+          <div class="form-row">
+            <label>이름</label>
+            <input type="text" id="p-name" value="${esc(p.name)}" placeholder="홍길동"
+              oninput="Editor.savePersonal()">
+          </div>
+          <div class="form-row">
+            <label>이메일</label>
+            <input type="email" id="p-email" value="${esc(p.email)}"
+              oninput="Editor.savePersonal()">
+          </div>
+          <div class="form-row">
+            <label>전화</label>
+            <input type="text" id="p-phone" value="${esc(p.phone)}"
+              oninput="Editor.savePersonal()">
+          </div>
+          <div class="form-row">
+            <label>위치</label>
+            <input type="text" id="p-location" value="${esc(p.location)}" placeholder="서울"
+              oninput="Editor.savePersonal()">
+          </div>
+          <div class="form-row">
+            <label>LinkedIn</label>
+            <input type="text" id="p-linkedin" value="${esc(p.linkedin)}"
+              oninput="Editor.savePersonal()">
+          </div>
+          <div class="form-row">
+            <label>GitHub</label>
+            <input type="text" id="p-github" value="${esc(p.github)}"
+              oninput="Editor.savePersonal()">
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="section-header">
+            <h3>학력</h3>
+            <button class="btn-primary" onclick="Editor.openEduModal()">+ 학력 추가</button>
+          </div>
+          <div id="edu-list">${eduHtml}</div>
+        </div>
       </div>
 
-      <div class="section-header mt-16">
-        <h3>직책 목록</h3>
-        <button class="btn-primary" onclick="Editor.openTitleModal()">+ 직책 추가</button>
-      </div>
-      <p class="section-desc">버전마다 다른 직책을 선택할 수 있어요.</p>
-      <div id="title-list">${titleList}</div>
+      <div class="personal-col">
+        <div class="info-card">
+          <div class="section-header">
+            <h3>직책 목록</h3>
+            <button class="btn-primary" onclick="Editor.openTitleModal()">+ 직책 추가</button>
+          </div>
+          <p class="section-desc">버전마다 다른 직책을 선택할 수 있어요.</p>
+          <div id="title-list">${titleList}</div>
+        </div>
 
-      <div class="section-header mt-16">
-        <h3>자기소개 목록</h3>
-        <button class="btn-primary" onclick="Editor.openSummaryModal()">+ 자기소개 추가</button>
+        <div class="info-card">
+          <div class="section-header">
+            <h3>보유 역량</h3>
+            <button class="btn-primary" onclick="Editor.openSkillModal()">+ 그룹 추가</button>
+          </div>
+          <div id="skill-list">${skillHtml}</div>
+        </div>
+
+        <div class="info-card">
+          <div class="section-header">
+            <h3>자격증 / 수료</h3>
+            <button class="btn-primary" onclick="Editor.openCertModal()">+ 추가</button>
+          </div>
+          <div id="cert-list">${certHtml}</div>
+        </div>
       </div>
-      <p class="section-desc">버전마다 다른 자기소개를 선택할 수 있어요.</p>
-      <div id="summary-list">${summaryList}</div>
+
+    </div>
     </div>`;
   },
 
@@ -212,7 +279,7 @@ const Editor = {
     else profile.summaries.push(s);
     Store.saveProfile(profile);
     closeModal('summary-modal');
-    App.renderMasterTab('personal');
+    App.renderMasterTab('summary');
     showToast('자기소개가 저장되었습니다.');
   },
 
@@ -229,71 +296,149 @@ const Editor = {
         Store.saveVersion(v);
       }
     });
-    App.renderMasterTab('personal');
+    App.renderMasterTab('summary');
     App.refreshPreview();
+  },
+
+  // ── 자기소개 탭 ─────────────────────────────────────
+  renderSummaryTab(profile) {
+    const summaries = profile.summaries || [];
+    const summaryList = summaries.length === 0
+      ? '<p class="empty-msg">자기소개를 추가하면 버전별로 선택할 수 있습니다.</p>'
+      : summaries.map(s => `
+        <div class="list-card" data-id="${s.id}">
+          <div class="list-card__info" style="flex-direction:column; align-items:flex-start; gap:4px;">
+            <strong>${esc(s.label) || '(제목 없음)'}</strong>
+            <span class="summary-preview">${esc(s.body).slice(0, 80)}${s.body.length > 80 ? '…' : ''}</span>
+          </div>
+          <div class="list-card__actions">
+            <button class="btn-sm" onclick="Editor.openSummaryModal('${s.id}')">편집</button>
+            <button class="btn-sm btn-danger" onclick="Editor.deleteSummary('${s.id}')">삭제</button>
+          </div>
+        </div>`).join('');
+    return `
+    <div class="exp-tab-section">
+      <div class="section-header">
+        <h3>자기소개</h3>
+        <button class="btn-primary" onclick="Editor.openSummaryModal()">+ 자기소개 추가</button>
+      </div>
+      <p class="section-desc">버전마다 다른 자기소개를 선택할 수 있어요.</p>
+      <div id="summary-list">${summaryList}</div>
+    </div>`;
   },
 
   // ── 경력 탭 ────────────────────────────────────────
   renderExperienceTab(profile) {
-    const exps = profile.experiences;
+    const exps = [...profile.experiences].sort((a, b) => {
+      const aDate = a.startDate || '0000-00';
+      const bDate = b.startDate || '0000-00';
+      return bDate.localeCompare(aDate);
+    });
     const projs = profile.projects || [];
-    const listHtml = exps.length === 0
-      ? '<p class="empty-msg">아직 경력이 없습니다. 아래 버튼으로 추가하세요.</p>'
-      : exps.map((e) => {
-          const expProjs = projs.filter(p => p.experienceId === e.id);
-          const projListHtml = expProjs.length === 0
-            ? '<p class="empty-msg empty-msg--sm">프로젝트가 없습니다.</p>'
-            : expProjs.map(p => `
-              <div class="list-card list-card--proj" data-id="${p.id}">
-                <div class="list-card__info">
-                  <span class="proj-dot">◦</span>
-                  <strong>${esc(p.name)}</strong>
-                  ${p.role ? `<span class="chip chip--sm">${esc(p.role)}</span>` : ''}
-                  ${p.startDate ? `<span class="period">${formatPeriod(p.startDate, p.endDate)}</span>` : ''}
+
+    const buildCard = (e) => {
+      const expProjs = projs.filter(p => p.experienceId === e.id);
+      const projListHtml = expProjs.length === 0
+        ? '<p class="empty-msg empty-msg--sm">프로젝트가 없습니다.</p>'
+        : expProjs.map(p => {
+            const metaParts = [
+              p.startDate ? formatPeriod(p.startDate, p.endDate) : '',
+              p.role || '',
+              ...(p.techStack || []),
+              ...(p.tags || []),
+            ].filter(Boolean);
+            const allBullets = [
+              ...(p.description ? p.description.split('\n').filter(l => l.trim()) : []),
+              ...(p.contributions || []),
+              ...(p.metrics || []),
+            ];
+            return `
+            <div class="list-card--proj" data-id="${p.id}">
+              <div class="proj-card__header">
+                <div class="proj-card__title-area">
+                  <strong class="proj-card__name">${esc(p.name)}</strong>
+                  ${metaParts.length ? `<div class="proj-card__meta">${metaParts.map(m => `<span>${esc(m)}</span>`).join('<span class="proj-meta-sep">|</span>')}</div>` : ''}
                 </div>
                 <div class="list-card__actions">
                   <button class="btn-sm" onclick="Editor.openProjModal('${p.id}')">편집</button>
                   <button class="btn-sm btn-danger" onclick="Editor.deleteProject('${p.id}')">삭제</button>
                 </div>
-              </div>`).join('');
+              </div>
+              ${allBullets.length ? `<ul class="proj-card__bullets">${allBullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}
+            </div>`;
+          }).join('');
 
-          return `
-          <div class="exp-card" data-id="${e.id}" draggable="true"
-            ondragstart="Editor.onExpDragStart(event, '${e.id}')"
-            ondragover="Editor.onExpDragOver(event)"
-            ondragleave="Editor.onExpDragLeave(event)"
-            ondrop="Editor.onExpDrop(event, '${e.id}')"
-            ondragend="Editor.onExpDragEnd(event)">
-            <div class="exp-card__header">
-              <span class="drag-handle" title="드래그해서 순서 변경">⠿</span>
-              <div class="exp-card__info">
-                <strong>${esc(e.company)}</strong>
-                ${e.department ? `<span class="chip">${esc(e.department)}</span>` : ''}
-                ${e.role ? `<span class="chip">${esc(e.role)}</span>` : ''}
-                <span class="period">${formatPeriod(e.startDate, e.endDate, e.isCurrent)}</span>
-              </div>
-              <div class="exp-card__actions">
-                <button class="btn-sm" onclick="Editor.openExpModal('${e.id}')">편집</button>
-                <button class="btn-sm btn-danger" onclick="Editor.deleteExperience('${e.id}')">삭제</button>
-              </div>
+      const initial = e.company ? e.company.replace(/^(\(.*?\)|\[.*?\])/, '').trim()[0] || '?' : '?';
+      const metaParts = [
+        formatPeriod(e.startDate, e.endDate, e.isCurrent),
+        e.role,
+        e.department,
+      ].filter(Boolean);
+      return `
+        <div class="exp-card" data-id="${e.id}" draggable="true"
+          ondragstart="Editor.onExpDragStart(event, '${e.id}')"
+          ondragover="Editor.onExpDragOver(event)"
+          ondragleave="Editor.onExpDragLeave(event)"
+          ondrop="Editor.onExpDrop(event, '${e.id}')"
+          ondragend="Editor.onExpDragEnd(event)">
+          <div class="exp-card__header">
+            <span class="drag-handle" title="드래그해서 순서 변경">⠿</span>
+            ${e.logo
+              ? `<div class="exp-company-logo exp-company-logo--img"><img src="${e.logo}" alt="${esc(e.company)}"></div>`
+              : `<div class="exp-company-logo">${esc(initial)}</div>`}
+            <div class="exp-card__info">
+              <strong class="exp-company-name">${esc(e.company)}</strong>
+              ${metaParts.length ? `<div class="exp-company-meta">${metaParts.map(m => `<span>${esc(m)}</span>`).join('<span class="exp-meta-sep">|</span>')}</div>` : ''}
             </div>
-            <div class="exp-card__projects">
-              <div class="exp-proj-header">
-                <span class="exp-proj-label">주요 프로젝트</span>
-                <button class="btn-sm btn-outline" onclick="Editor.openProjModal(null, '${e.id}')">+ 프로젝트 추가</button>
-              </div>
+            <div class="exp-card__actions">
+              <button class="btn-sm" onclick="Editor.openExpModal('${e.id}')">편집</button>
+              <button class="btn-sm btn-danger" onclick="Editor.deleteExperience('${e.id}')">삭제</button>
+            </div>
+          </div>
+          <div class="exp-card__projects">
+            <div class="exp-proj-header">
+              <span class="exp-proj-label">주요 프로젝트</span>
+              <button class="btn-sm btn-outline" onclick="Editor.openProjModal(null, '${e.id}')">+ 프로젝트 추가</button>
+            </div>
+            <div class="exp-proj-body" id="proj-body-${e.id}">
               <div class="exp-proj-list" id="proj-list-${e.id}">${projListHtml}</div>
             </div>
-          </div>`;
-        }).join('');
+            <div class="exp-proj-more" id="proj-more-${e.id}">
+              <button class="exp-proj-more-btn" onclick="Editor.toggleProjMore('${e.id}')">더보기 ∨</button>
+            </div>
+          </div>
+        </div>`;
+    };
+
+    // 연도별 그룹핑
+    const yearMap = new Map();
+    exps.forEach(e => {
+      const year = e.startDate ? e.startDate.slice(0, 4) : '미정';
+      if (!yearMap.has(year)) yearMap.set(year, []);
+      yearMap.get(year).push(e);
+    });
+
+    const groupedHtml = [...yearMap.entries()].map(([year, group]) => `
+      <div class="exp-year-group">
+        <div class="exp-year-label">
+          <span class="exp-year-text">${year}</span>
+          <div class="exp-year-line"></div>
+        </div>
+        <div class="exp-year-cards">
+          ${group.map(e => buildCard(e)).join('')}
+        </div>
+      </div>`).join('');
 
     return `
-    <div class="form-section">
+    <div class="exp-tab-section">
       <div class="section-header">
         <h3>경력 목록</h3>
         <button class="btn-primary" onclick="Editor.openExpModal()">+ 경력 추가</button>
       </div>
-      <div id="exp-list">${listHtml}</div>
+      ${exps.length === 0
+        ? '<p class="empty-msg">아직 경력이 없습니다. 아래 버튼으로 추가하세요.</p>'
+        : `<div id="exp-list">${groupedHtml}</div>`
+      }
     </div>`;
   },
 
@@ -311,6 +456,18 @@ const Editor = {
         </div>
         <div class="modal-body">
           <input type="hidden" id="em-id" value="${esc(e.id)}">
+          <input type="hidden" id="em-logo" value="${esc(e.logo || '')}">
+          <div class="form-row">
+            <label>회사 로고 <span class="label-hint">(선택 · PNG/JPG/SVG)</span></label>
+            <div class="logo-upload-area" onclick="document.getElementById('em-logo-file').click()">
+              ${e.logo
+                ? `<img id="em-logo-preview" src="${e.logo}" class="logo-upload-preview">`
+                : `<span id="em-logo-preview" class="logo-upload-placeholder">＋ 이미지 업로드</span>`}
+            </div>
+            <input type="file" id="em-logo-file" accept="image/*" style="display:none"
+              onchange="Editor.handleLogoUpload(this)">
+            ${e.logo ? `<button class="btn-sm btn-ghost" style="margin-top:6px;width:fit-content" onclick="Editor.clearLogo()">로고 제거</button>` : ''}
+          </div>
           <div class="form-row">
             <label>회사명 *</label>
             <input id="em-company" value="${esc(e.company)}" placeholder="(주)회사명">
@@ -384,6 +541,7 @@ const Editor = {
       isCurrent:  document.getElementById('em-current').checked,
       description: document.getElementById('em-desc').value.trim(),
       achievements, tags,
+      logo: document.getElementById('em-logo').value,
     });
 
     const profile = Store.getProfile();
@@ -398,6 +556,36 @@ const Editor = {
     showToast('경력이 저장되었습니다.');
   },
 
+  handleLogoUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('em-logo').value = e.target.result;
+      const preview = document.getElementById('em-logo-preview');
+      if (preview.tagName === 'IMG') {
+        preview.src = e.target.result;
+      } else {
+        const img = document.createElement('img');
+        img.id = 'em-logo-preview';
+        img.className = 'logo-upload-preview';
+        img.src = e.target.result;
+        preview.replaceWith(img);
+      }
+    };
+    reader.readAsDataURL(file);
+  },
+
+  clearLogo() {
+    document.getElementById('em-logo').value = '';
+    const preview = document.getElementById('em-logo-preview');
+    const span = document.createElement('span');
+    span.id = 'em-logo-preview';
+    span.className = 'logo-upload-placeholder';
+    span.textContent = '＋ 이미지 업로드';
+    preview.replaceWith(span);
+  },
+
   deleteExperience(id) {
     if (!confirm('이 경력 항목을 삭제할까요?')) return;
     const profile = Store.getProfile();
@@ -405,6 +593,25 @@ const Editor = {
     Store.saveProfile(profile);
     App.renderMasterTab('experience');
     App.refreshPreview();
+  },
+
+  initProjMoreButtons() {
+    document.querySelectorAll('.exp-proj-body').forEach(body => {
+      const id = body.id.replace('proj-body-', '');
+      const more = document.getElementById('proj-more-' + id);
+      if (!more) return;
+      if (body.scrollHeight > body.clientHeight) {
+        more.classList.add('visible');
+      }
+    });
+  },
+
+  toggleProjMore(id) {
+    const body = document.getElementById('proj-body-' + id);
+    const btn = document.querySelector('#proj-more-' + id + ' .exp-proj-more-btn');
+    if (!body) return;
+    const expanded = body.classList.toggle('expanded');
+    btn.textContent = expanded ? '접기 ∧' : '더보기 ∨';
   },
 
   // ── 프로젝트 탭 (독립 프로젝트: 경력에 연결되지 않은 것) ────
@@ -428,36 +635,60 @@ const Editor = {
       return matchQuery && matchCompany && matchType;
     });
 
-    const listHtml = projs.length === 0
-      ? '<p class="empty-msg">경력에 연결되지 않은 독립 프로젝트가 없습니다.</p>'
-      : filtered.length === 0
-        ? '<p class="empty-msg">검색 결과가 없습니다.</p>'
-        : filtered.map(p => `
-          <div class="list-card" data-id="${p.id}">
-            <div class="list-card__info">
-              <strong>${esc(p.name)}</strong>
-              ${p.role ? `<span class="chip">${esc(p.role)}</span>` : ''}
-              ${p.company ? `<span class="period">${esc(p.company)}</span>` : ''}
+    const PROJECT_TYPES = ['개선','신규','리뉴얼','UI/GUI','콘텐츠/상세페이지','제안서/PPT'];
+
+    const cardHtmlList = filtered.map(p => {
+      const initial = p.name ? p.name.trim()[0] : '?';
+      const metaParts = [
+        p.startDate ? formatPeriod(p.startDate, p.endDate) : '',
+        p.role || '',
+        p.company || '',
+        p.projectType || '',
+      ].filter(Boolean);
+      const allBullets = [
+        ...(p.description ? p.description.split('\n').filter(l => l.trim()) : []),
+        ...(p.contributions || []),
+        ...(p.metrics || []),
+      ];
+      const chips = [...(p.techStack || []), ...(p.tags || [])];
+      return `
+        <div class="exp-card" data-id="${p.id}">
+          <div class="exp-card__header">
+            <div class="exp-company-logo proj-logo">${esc(initial)}</div>
+            <div class="exp-card__info">
+              <strong class="exp-company-name">${esc(p.name)}</strong>
+              ${metaParts.length ? `<div class="exp-company-meta">${metaParts.map(m => `<span>${esc(m)}</span>`).join('<span class="exp-meta-sep">|</span>')}</div>` : ''}
             </div>
-            <div class="list-card__actions">
+            <div class="exp-card__actions">
               <button class="btn-sm" onclick="Editor.openProjModal('${p.id}')">편집</button>
               <button class="btn-sm btn-danger" onclick="Editor.deleteProject('${p.id}')">삭제</button>
             </div>
-          </div>`).join('');
+          </div>
+          <div class="exp-card__projects exp-card__projects--standalone">
+            <div class="exp-proj-body" id="proj-body-${p.id}">
+              ${allBullets.length ? `<ul class="proj-card__bullets">${allBullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : '<p class="empty-msg empty-msg--sm">내용이 없습니다.</p>'}
+              ${chips.length ? `<div class="proj-card__chips proj-card__chips--bottom">${chips.map(t => `<span class="chip chip--sm">${esc(t)}</span>`).join('')}</div>` : ''}
+            </div>
+            <div class="exp-proj-more" id="proj-more-${p.id}">
+              <button class="exp-proj-more-btn" onclick="Editor.toggleProjMore('${p.id}')">더보기 ∨</button>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    const leftCards  = cardHtmlList.filter((_, i) => i % 2 === 0).join('');
+    const rightCards = cardHtmlList.filter((_, i) => i % 2 === 1).join('');
 
     const companyOptions = companies.map(c =>
       `<option value="${esc(c)}" ${filterCompany === c ? 'selected' : ''}>${esc(c)}</option>`
     ).join('');
-
-    const PROJECT_TYPES = ['개선','신규','리뉴얼','UI/GUI','콘텐츠/상세페이지','제안서/PPT'];
     const typeOptions = PROJECT_TYPES.map(t =>
       `<option value="${esc(t)}" ${filterType === t ? 'selected' : ''}>${esc(t)}</option>`
     ).join('');
-
     const hasFilter = filterQuery || filterCompany || filterType;
 
     return `
-    <div class="form-section">
+    <div class="exp-tab-section">
       <div class="section-header">
         <h3>독립 프로젝트 <span class="list-count">${filtered.length}/${projs.length}</span></h3>
         <button class="btn-primary" onclick="Editor.openProjModal()">+ 프로젝트 추가</button>
@@ -479,7 +710,15 @@ const Editor = {
         </select>
         ${hasFilter ? `<button class="filter-reset" onclick="Editor.filterProjects('','','')">초기화 ✕</button>` : ''}
       </div>
-      <div id="proj-list">${listHtml}</div>
+      ${projs.length === 0
+        ? '<p class="empty-msg">경력에 연결되지 않은 독립 프로젝트가 없습니다.</p>'
+        : filtered.length === 0
+          ? '<p class="empty-msg">검색 결과가 없습니다.</p>'
+          : `<div class="exp-list--grid">
+               <div class="exp-col">${leftCards}</div>
+               <div class="exp-col">${rightCards}</div>
+             </div>`
+      }
     </div>`;
   },
 
@@ -547,10 +786,6 @@ const Editor = {
             </div>
           </div>
           <div class="form-row form-row--full">
-            <label>프로젝트 설명</label>
-            <textarea id="pm-desc" rows="3">${esc(p.description)}</textarea>
-          </div>
-          <div class="form-row form-row--full">
             <label>정량 성과 (배지로 표시됨)</label>
             <div id="pm-metrics">
               ${(p.metrics.length ? p.metrics : ['']).map(m => `
@@ -607,7 +842,7 @@ const Editor = {
       role:     document.getElementById('pm-role').value.trim(),
       startDate: document.getElementById('pm-start').value,
       endDate:   document.getElementById('pm-end').value,
-      description: document.getElementById('pm-desc').value.trim(),
+      description: '',
       projectType: document.getElementById('pm-type').value,
       metrics, contributions, techStack, tags,
     });
@@ -711,7 +946,7 @@ const Editor = {
     else profile.skills.push(sg);
     Store.saveProfile(profile);
     closeModal('skill-modal');
-    App.renderMasterTab('skill');
+    App.renderMasterTab('personal');
     App.refreshPreview();
     showToast('저장되었습니다.');
   },
@@ -721,7 +956,7 @@ const Editor = {
     const profile = Store.getProfile();
     profile.skills = profile.skills.filter(s => s.id !== id);
     Store.saveProfile(profile);
-    App.renderMasterTab('skill');
+    App.renderMasterTab('personal');
     App.refreshPreview();
   },
 
@@ -736,6 +971,7 @@ const Editor = {
           <div class="list-card__info">
             <strong>${esc(e.school)}</strong>
             <span class="chip">${esc(e.degree)} ${esc(e.major)}</span>
+            ${e.graduationStatus ? `<span class="chip">${esc(e.graduationStatus)}</span>` : ''}
             <span class="period">${formatPeriod(e.startDate, e.endDate)}</span>
           </div>
           <div class="list-card__actions">
@@ -781,8 +1017,20 @@ const Editor = {
         <div class="modal-body">
           <input type="hidden" id="edm-id" value="${esc(e.id)}">
           <div class="form-row"><label>학교명</label><input id="edm-school" value="${esc(e.school)}"></div>
-          <div class="form-row"><label>전공</label><input id="edm-major" value="${esc(e.major)}"></div>
-          <div class="form-row"><label>학위</label><input id="edm-degree" value="${esc(e.degree)}" placeholder="학사/석사/박사"></div>
+          <div class="form-row-group">
+            <div class="form-row"><label>전공</label><input id="edm-major" value="${esc(e.major)}"></div>
+            <div class="form-row"><label>학위</label><input id="edm-degree" value="${esc(e.degree)}" placeholder="학사/석사/박사"></div>
+          </div>
+          <div class="form-row">
+            <label>졸업 여부</label>
+            <div class="type-chip-group" id="edm-status-group">
+              ${['졸업','졸업예정','수료','중퇴','휴학'].map(s => `
+                <button type="button" class="type-chip ${e.graduationStatus === s ? 'active' : ''}"
+                  onclick="Editor.toggleGradStatus(this, '${s}')">${s}</button>
+              `).join('')}
+            </div>
+            <input type="hidden" id="edm-status" value="${esc(e.graduationStatus || '')}">
+          </div>
           <div class="form-row-group">
             <div class="form-row"><label>입학</label><input id="edm-start" type="month" value="${esc(e.startDate)}"></div>
             <div class="form-row"><label>졸업</label><input id="edm-end" type="month" value="${esc(e.endDate)}"></div>
@@ -797,6 +1045,12 @@ const Editor = {
     document.body.insertAdjacentHTML('beforeend', html);
   },
 
+  toggleGradStatus(btn, status) {
+    document.querySelectorAll('#edm-status-group .type-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('edm-status').value = status;
+  },
+
   saveEdu() {
     const id = document.getElementById('edm-id').value;
     const edu = createEducation({
@@ -806,6 +1060,7 @@ const Editor = {
       degree: document.getElementById('edm-degree').value.trim(),
       startDate: document.getElementById('edm-start').value,
       endDate:   document.getElementById('edm-end').value,
+      graduationStatus: document.getElementById('edm-status').value,
     });
     const profile = Store.getProfile();
     const idx = profile.educations.findIndex(e => e.id === id);
@@ -813,7 +1068,7 @@ const Editor = {
     else profile.educations.push(edu);
     Store.saveProfile(profile);
     closeModal('edu-modal');
-    App.renderMasterTab('education');
+    App.renderMasterTab('personal');
     App.refreshPreview();
     showToast('저장되었습니다.');
   },
@@ -823,7 +1078,7 @@ const Editor = {
     const profile = Store.getProfile();
     profile.educations = profile.educations.filter(e => e.id !== id);
     Store.saveProfile(profile);
-    App.renderMasterTab('education');
+    App.renderMasterTab('personal');
     App.refreshPreview();
   },
 
@@ -868,7 +1123,7 @@ const Editor = {
     else profile.certifications.push(cert);
     Store.saveProfile(profile);
     closeModal('cert-modal');
-    App.renderMasterTab('education');
+    App.renderMasterTab('personal');
     App.refreshPreview();
     showToast('저장되었습니다.');
   },
@@ -878,7 +1133,7 @@ const Editor = {
     const profile = Store.getProfile();
     profile.certifications = (profile.certifications || []).filter(c => c.id !== id);
     Store.saveProfile(profile);
-    App.renderMasterTab('education');
+    App.renderMasterTab('personal');
     App.refreshPreview();
   },
 

@@ -1,43 +1,118 @@
 // ── 버전 관리 모듈 ────────────────────────────────────
 const VersionManager = {
+  currentCompany: null, // null = 전체
 
-  // ── 버전 그리드 렌더링 ────────────────────────────────
+  // ── 회사 사이드바 렌더링 ──────────────────────────────
   renderVersionSidebar() {
+    this.renderCompanySidebar();
+    this.renderVersionGrid();
+  },
+
+  renderCompanySidebar() {
+    const versions = Store.listVersions();
+    const companies = Store.listCompanies();
+    const tabsEl = document.getElementById('version-company-tabs');
+    if (!tabsEl) return;
+
+    const addBtn = `<button class="btn-add-company" onclick="VersionManager.openCreateCompanyModal()">+ 회사 추가</button>`;
+
+    const allBtn = `<button class="version-company-btn ${this.currentCompany === null ? 'active' : ''}"
+      onclick="VersionManager.selectCompany(null)">전체 <span class="version-company-count">${versions.length}</span></button>`;
+
+    const divider = `<div class="sidebar-divider"></div>`;
+
+    const companyItems = companies.length === 0
+      ? `<p class="company-empty-hint">회사를 추가하면<br>이력서를 회사별로<br>관리할 수 있어요.</p>`
+      : companies.map(c => {
+          const count = versions.filter(v => v.companyId === c.id).length;
+          const isActive = this.currentCompany === c.id;
+          return `
+            <div class="version-company-item">
+              <button class="version-company-btn ${isActive ? 'active' : ''}"
+                data-cid="${c.id}" onclick="VersionManager.selectCompany(this.dataset.cid)">
+                <span class="company-btn-name">${esc(c.name)}</span>
+                <span class="version-company-count">${count}</span>
+              </button>
+              <div class="company-item-actions">
+                <button title="이름 변경" onclick="VersionManager.editCompany('${c.id}')">✎</button>
+                <button title="삭제" onclick="VersionManager.deleteCompany('${c.id}')">✕</button>
+              </div>
+            </div>`;
+        }).join('');
+
+    tabsEl.innerHTML = addBtn + allBtn + divider + companyItems;
+  },
+
+  selectCompany(companyId) {
+    this.currentCompany = companyId || null;
+    const company = companyId ? Store.getCompany(companyId) : null;
+    const titleEl = document.getElementById('vgrid-title-text');
+    if (titleEl) titleEl.textContent = company ? company.name : '이력서 관리';
+    const searchInput = document.getElementById('vgrid-search-input');
+    if (searchInput) searchInput.value = '';
+    this.renderCompanySidebar();
     this.renderVersionGrid();
   },
 
   renderVersionGrid(query = '') {
     const versions = Store.listVersions();
+    const companies = Store.listCompanies();
     const q = query.toLowerCase();
-    const filtered = q
-      ? versions.filter(v =>
-          v.name.toLowerCase().includes(q) ||
-          (v.targetCompany || '').toLowerCase().includes(q))
-      : versions;
+    const gridEl = document.getElementById('version-grid');
+    if (!gridEl) return;
 
-    const gridHtml = filtered.length === 0
+    // 전체 탭: 회사 카드 목록
+    if (this.currentCompany === null) {
+      let filteredCompanies = q
+        ? companies.filter(c => c.name.toLowerCase().includes(q))
+        : companies;
+
+      if (filteredCompanies.length === 0) {
+        gridEl.innerHTML = `<div class="vgrid-empty">
+          <div class="empty-icon">🏢</div>
+          <p>${q ? '검색 결과가 없습니다.' : '먼저 회사를 추가해주세요.'}</p>
+          ${!q ? `<button class="btn-primary mt-12" onclick="VersionManager.openCreateCompanyModal()">+ 회사 추가</button>` : ''}
+        </div>`;
+      } else {
+        gridEl.innerHTML = filteredCompanies.map(c => this._companyCardHtml(c, versions)).join('');
+      }
+      return;
+    }
+
+    // 회사 탭: 해당 회사의 이력서 목록
+    let filtered = versions.filter(v => v.companyId === this.currentCompany);
+    if (q) {
+      filtered = filtered.filter(v => v.name.toLowerCase().includes(q));
+    }
+
+    gridEl.innerHTML = filtered.length === 0
       ? `<div class="vgrid-empty">
           <div class="empty-icon">📄</div>
-          <p>${q ? '검색 결과가 없습니다.' : '아직 버전이 없습니다.<br>새 버전을 만들어보세요.'}</p>
+          <p>${q ? '검색 결과가 없습니다.' : '이 회사의 이력서가 없습니다.<br>새 버전을 만들어보세요.'}</p>
           ${!q ? `<button class="btn-primary mt-12" onclick="VersionManager.openCreateModal()">+ 새 버전 만들기</button>` : ''}
         </div>`
       : filtered.map(v => this._vgridCardHtml(v)).join('');
-
-    const gridEl = document.getElementById('version-grid');
-    if (gridEl) gridEl.innerHTML = gridHtml;
   },
 
-  _vgridCardHtml(v) {
-    const diff = v.deadline
-      ? Math.ceil((new Date(v.deadline) - new Date().setHours(0,0,0,0)) / 86400000)
+  _companyCardHtml(company, allVersions) {
+    const versionCount = allVersions.filter(v => v.companyId === company.id).length;
+    const companyVersions = allVersions.filter(v => v.companyId === company.id);
+    const latestUpdated = companyVersions.length > 0
+      ? companyVersions.reduce((a, b) => a.updatedAt > b.updatedAt ? a : b)
       : null;
-    const deadlineHtml = diff !== null
-      ? `<span class="vcard-deadline${diff <= 3 ? ' urgent' : diff <= 7 ? ' warn' : ''}">${diff < 0 ? '마감' : diff === 0 ? 'D-Day' : `D-${diff}`}</span>`
+    const updatedDate = latestUpdated
+      ? new Date(latestUpdated.updatedAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
       : '';
-    const updatedDate = v.updatedAt ? new Date(v.updatedAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) : '';
+    const statusCounts = { submitted: 0, ready: 0, draft: 0 };
+    companyVersions.forEach(v => { if (statusCounts[v.status] !== undefined) statusCounts[v.status]++; });
+    const statusChips = [
+      statusCounts.submitted > 0 ? `<span class="status-chip status-submitted">${statusCounts.submitted}개 제출</span>` : '',
+      statusCounts.ready     > 0 ? `<span class="status-chip status-ready">${statusCounts.ready}개 완료</span>` : '',
+      statusCounts.draft     > 0 ? `<span class="status-chip status-draft">${statusCounts.draft}개 초안</span>` : '',
+    ].filter(Boolean).join('');
 
     return `
-      <div class="vgrid-card" onclick="VersionManager.showVersion('${v.id}')">
+      <div class="vgrid-card" onclick="VersionManager.selectCompany('${company.id}')">
         <div class="vgrid-card__tab"></div>
         <div class="vgrid-card__folder">
           <div class="vgrid-card__inner-doc">
@@ -46,17 +121,133 @@ const VersionManager = {
             <div class="vgrid-card__inner-line xshort"></div>
           </div>
           <div class="vgrid-card__actions" onclick="event.stopPropagation()">
-            <button class="btn-icon" title="복사" onclick="VersionManager.duplicate('${v.id}')">⧉</button>
-            <button class="btn-icon" title="삭제" onclick="VersionManager.delete('${v.id}')">✕</button>
+            <button class="btn-icon" title="이름 변경" onclick="VersionManager.editCompany('${company.id}')">✎</button>
+            <button class="btn-icon" title="삭제" onclick="VersionManager.deleteCompany('${company.id}')">✕</button>
           </div>
           <div class="vgrid-card__info">
-            <div class="vgrid-card__name">${esc(v.name)}</div>
-            ${v.targetCompany ? `<div class="vgrid-card__company">${esc(v.targetCompany)}</div>` : ''}
+            <div class="vgrid-card__company-name">${esc(company.name)}</div>
+            <div class="vgrid-card__resume-count">이력서 ${versionCount}개</div>
             <div class="vgrid-card__meta">
-              <span class="status-chip status-${v.status}">${statusLabel(v.status)}</span>
-              ${deadlineHtml}
-              <span class="vgrid-card__date">${updatedDate}</span>
+              ${statusChips}
+              ${updatedDate ? `<span class="vgrid-card__date">${updatedDate}</span>` : ''}
             </div>
+          </div>
+        </div>
+      </div>`;
+  },
+
+  // ── 회사 생성/편집/삭제 ───────────────────────────────
+  openCreateCompanyModal() {
+    const html = `
+    <div class="modal-overlay" id="company-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>회사 추가</h3>
+          <button class="modal-close" onclick="closeModal('company-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label>회사명 *</label>
+            <input id="cm-name" placeholder="예: 카카오페이">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-ghost" onclick="closeModal('company-modal')">취소</button>
+          <button class="btn-primary" onclick="VersionManager.saveCompanyModal()">추가</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+    setTimeout(() => document.getElementById('cm-name').focus(), 50);
+  },
+
+  saveCompanyModal() {
+    const name = document.getElementById('cm-name').value.trim();
+    if (!name) { alert('회사명을 입력하세요.'); return; }
+    const company = createCompany({ name });
+    Store.saveCompany(company);
+    closeModal('company-modal');
+    this.renderCompanySidebar();
+    this.selectCompany(company.id);
+    showToast('회사가 추가되었습니다.');
+  },
+
+  editCompany(id) {
+    const company = Store.getCompany(id);
+    if (!company) return;
+    const name = prompt('회사명 변경:', company.name);
+    if (name === null || name.trim() === '') return;
+    company.name = name.trim();
+    Store.saveCompany(company);
+    // 이 회사에 속한 버전의 targetCompany도 동기화
+    Store.listVersions().forEach(v => {
+      if (v.companyId === id) {
+        v.targetCompany = company.name;
+        Store.saveVersion(v);
+      }
+    });
+    this.renderCompanySidebar();
+    this.renderVersionGrid();
+    showToast('회사명이 변경되었습니다.');
+  },
+
+  deleteCompany(id) {
+    const company = Store.getCompany(id);
+    if (!company) return;
+    const versionCount = Store.listVersions().filter(v => v.companyId === id).length;
+    const msg = versionCount > 0
+      ? `"${company.name}" 회사를 삭제하면 등록된 이력서 ${versionCount}개도 함께 삭제됩니다.\n계속할까요?`
+      : `"${company.name}" 회사를 삭제할까요?`;
+    if (!confirm(msg)) return;
+    if (versionCount > 0) {
+      Store.listVersions().filter(v => v.companyId === id).forEach(v => Store.deleteVersion(v.id));
+      App.updateVersionBadge();
+    }
+    Store.deleteCompany(id);
+    if (this.currentCompany === id) this.currentCompany = null;
+    this.renderVersionSidebar();
+    showToast('삭제되었습니다.');
+  },
+
+  _vgridCardHtml(v) {
+    const companyName = v.targetCompany || (v.companyId ? (Store.getCompany(v.companyId)?.name || '') : '');
+    const initial = companyName ? companyName[0] : '?';
+    const logoColors = ['#6c63ff','#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899'];
+    const colorIdx = companyName.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % logoColors.length;
+    const logoColor = logoColors[colorIdx];
+
+    const diff = v.deadline
+      ? Math.ceil((new Date(v.deadline) - new Date().setHours(0,0,0,0)) / 86400000)
+      : null;
+    const deadlineHtml = diff !== null
+      ? `<span class="vcard-deadline${diff <= 3 ? ' urgent' : diff <= 7 ? ' warn' : ''}">${diff < 0 ? '마감' : diff === 0 ? 'D-Day' : `D-${diff}`}</span>`
+      : '';
+    const updatedDate = v.updatedAt
+      ? new Date(v.updatedAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) + ' 수정'
+      : '';
+    const notes = v.notes ? esc(v.notes) : '';
+    const resultHtml = v.result ? `<span class="vlist-card__result">${esc(v.result)}</span>` : '';
+
+    return `
+      <div class="vlist-card" onclick="VersionManager.showVersion('${v.id}')">
+        <div class="vlist-card__header">
+          <div class="vlist-card__logo" style="background:${logoColor}">${initial}</div>
+          <div class="vlist-card__title-wrap">
+            <div class="vlist-card__name">${esc(v.name)}</div>
+            <div class="vlist-card__company">${esc(companyName)}</div>
+          </div>
+        </div>
+        <div class="vlist-card__chips">
+          <span class="status-chip status-${v.status}">${statusLabel(v.status)}</span>
+          ${deadlineHtml}
+          ${resultHtml}
+        </div>
+        ${notes ? `<p class="vlist-card__notes">${notes}</p>` : '<p class="vlist-card__notes vlist-card__notes--empty">메모 없음</p>'}
+        <div class="vlist-card__footer">
+          <span class="vlist-card__date">${updatedDate}</span>
+          <div class="vlist-card__btns" onclick="event.stopPropagation()">
+            <button class="vlist-card__btn-outline" onclick="VersionManager.duplicate('${v.id}')">복사</button>
+            <button class="vlist-card__btn-primary" onclick="VersionManager.showVersion('${v.id}')">열기</button>
           </div>
         </div>
       </div>`;
@@ -82,6 +273,7 @@ const VersionManager = {
   backToGrid() {
     document.getElementById('version-workspace-view').classList.add('hidden');
     document.getElementById('version-grid-view').classList.remove('hidden');
+    this.renderCompanySidebar();
     this.renderVersionGrid();
   },
 
@@ -94,8 +286,9 @@ const VersionManager = {
         <button class="vh-back" onclick="VersionManager.backToGrid()">← 목록으로</button>
         <input class="vh-name" value="${esc(v.name)}" placeholder="버전 이름"
           onblur="VersionManager.updateField('${id}', 'name', this.value)">
-        <input class="vh-company" value="${esc(v.targetCompany)}" placeholder="지원 회사 (선택)"
-          onblur="VersionManager.updateField('${id}', 'targetCompany', this.value)">
+        <select class="vh-company-select" onchange="VersionManager.changeVersionCompany('${id}', this.value)">
+          ${Store.listCompanies().map(c => `<option value="${c.id}" ${v.companyId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}
+        </select>
       </div>
       <div class="vh-right">
         <label class="vh-label">마감일</label>
@@ -939,11 +1132,20 @@ const VersionManager = {
     if (!version) return;
     version[field] = value;
     Store.saveVersion(version);
-    if (field === 'name' || field === 'targetCompany' || field === 'status') {
-      this.renderVersionSidebar();
+    if (field === 'name' || field === 'status') {
       this.renderVersionHeader(versionId);
     }
     if (field === 'templateId') App.refreshPreview();
+  },
+
+  changeVersionCompany(versionId, companyId) {
+    const version = Store.getVersion(versionId);
+    if (!version) return;
+    const company = Store.getCompany(companyId);
+    version.companyId = companyId;
+    version.targetCompany = company ? company.name : '';
+    Store.saveVersion(version);
+    App.refreshPreview();
   },
 
   duplicate(id) {
@@ -952,6 +1154,7 @@ const VersionManager = {
     if (name === null) return;
     const copy = Store.duplicateVersion(id, name);
     App.updateVersionBadge();
+    this.renderCompanySidebar();
     this.renderVersionGrid();
     if (copy) this.showVersion(copy.id);
   },
@@ -965,11 +1168,30 @@ const VersionManager = {
     if (workspace && !workspace.classList.contains('hidden')) {
       this.backToGrid();
     } else {
+      this.renderCompanySidebar();
       this.renderVersionGrid();
     }
   },
 
   openCreateModal() {
+    const companies = Store.listCompanies();
+    const selectedCompany = this.currentCompany ? Store.getCompany(this.currentCompany) : null;
+
+    const companyField = selectedCompany
+      ? `<div class="form-row">
+           <label>지원 회사</label>
+           <div class="nv-company-display">${esc(selectedCompany.name)}</div>
+           <input type="hidden" id="nv-company-id" value="${selectedCompany.id}">
+         </div>`
+      : `<div class="form-row">
+           <label>지원 회사 *</label>
+           <select id="nv-company-select">
+             <option value="">-- 회사 선택 --</option>
+             ${companies.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}
+           </select>
+           ${companies.length === 0 ? `<p class="form-hint">먼저 <button class="btn-link" onclick="closeModal('new-version-modal');VersionManager.openCreateCompanyModal()">회사를 추가</button>하세요.</p>` : ''}
+         </div>`;
+
     const html = `
     <div class="modal-overlay" id="new-version-modal">
       <div class="modal">
@@ -979,10 +1201,7 @@ const VersionManager = {
         </div>
         <div class="modal-body">
           <p class="modal-desc">버전을 만들면 마스터 데이터에서 이 버전에 포함할 항목을 선택할 수 있습니다.</p>
-          <div class="form-row">
-            <label>지원 회사 *</label>
-            <input id="nv-company" placeholder="예: 카카오페이">
-          </div>
+          ${companyField}
           <div class="form-row">
             <label>버전 이름 <span class="label-hint">(선택 — 비우면 회사명으로 자동 생성)</span></label>
             <input id="nv-name" placeholder="예: 카카오페이 PO 지원용">
@@ -1006,17 +1225,25 @@ const VersionManager = {
       </div>
     </div>`;
     document.body.insertAdjacentHTML('beforeend', html);
-    setTimeout(() => document.getElementById('nv-company').focus(), 50);
+    setTimeout(() => document.getElementById('nv-name').focus(), 50);
   },
 
   createVersion() {
-    const company = document.getElementById('nv-company').value.trim();
-    if (!company) { alert('지원 회사를 입력하세요.'); return; }
-    const name = document.getElementById('nv-name').value.trim() || company;
+    // 회사 ID 결정
+    const hiddenId = document.getElementById('nv-company-id');
+    const selectEl = document.getElementById('nv-company-select');
+    const companyId = hiddenId ? hiddenId.value : (selectEl ? selectEl.value : '');
+    if (!companyId) { alert('지원 회사를 선택하세요.'); return; }
+
+    const company = Store.getCompany(companyId);
+    const nameInput = document.getElementById('nv-name').value.trim();
+    const name = nameInput || (company ? company.name : '새 버전');
     const profile = Store.getProfile();
+
     const version = createVersion({
       name,
-      targetCompany: company,
+      companyId,
+      targetCompany: company ? company.name : '',
       deadline:      document.getElementById('nv-deadline').value,
       templateId:    document.getElementById('nv-template').value,
       baseProfileId: profile.id,
@@ -1028,7 +1255,7 @@ const VersionManager = {
     Store.saveVersion(version);
     closeModal('new-version-modal');
     App.updateVersionBadge();
-    App.switchView('versions');
+    this.renderCompanySidebar();
     this.showVersion(version.id);
     showToast('버전이 생성되었습니다. 포함할 항목을 선택하세요.');
   },

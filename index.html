@@ -50,25 +50,32 @@
     <!-- ── 뷰 2: 버전 관리 ── -->
     <div id="view-versions" class="view">
 
-      <!-- 화면 2-A: 그리드 목록 -->
+      <!-- 화면 2-A: 사이드바 + 그리드 목록 -->
       <div id="version-grid-view" class="vgrid-view">
-        <div class="vgrid-header">
-          <div class="vgrid-header__left">
-            <h2 class="vgrid-title">이력서 관리</h2>
-          </div>
-          <div class="vgrid-header__right">
-            <button class="btn-primary" onclick="VersionManager.openCreateModal()">+ 새 버전</button>
-          </div>
+        <!-- 좌측: 회사 목록 사이드바 -->
+        <div class="version-sidebar">
+          <div id="version-company-tabs" class="version-company-tabs"><!-- JS 렌더 --></div>
         </div>
-        <div class="vgrid-toolbar">
-          <div class="vgrid-search">
-            <span class="vgrid-search__icon">🔍</span>
-            <input type="text" id="vgrid-search-input" placeholder="버전 검색…"
-              oninput="VersionManager.filterGrid(this.value)">
+        <!-- 우측: 버전 목록 -->
+        <div class="version-main">
+          <div class="vgrid-header">
+            <div class="vgrid-header__left">
+              <h2 class="vgrid-title" id="vgrid-title-text">이력서 관리</h2>
+            </div>
+            <div class="vgrid-header__right">
+              <button class="btn-primary" onclick="VersionManager.openCreateModal()">+ 새 버전</button>
+            </div>
           </div>
-        </div>
-        <div class="vgrid-body">
-          <div id="version-grid" class="vgrid"><!-- JS 렌더 --></div>
+          <div class="vgrid-toolbar">
+            <div class="vgrid-search">
+              <span class="vgrid-search__icon">🔍</span>
+              <input type="text" id="vgrid-search-input" placeholder="버전 검색…"
+                oninput="VersionManager.filterGrid(this.value)">
+            </div>
+          </div>
+          <div class="vgrid-body">
+            <div id="version-grid" class="vgrid"><!-- JS 렌더 --></div>
+          </div>
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 const KEYS = {
   PROFILE: 'rca_profile',
   VERSIONS: 'rca_versions',
+  COMPANIES: 'rca_companies',
   ACTIVE_VERSION: 'rca_active_version',
 };
 
@@ -24,6 +25,47 @@ const Store = {
   saveProfile(profile) {
     profile.updatedAt = new Date().toISOString();
     save(KEYS.PROFILE, profile);
+  },
+
+  // ── Companies ────────────────────────────────────────
+  listCompanies() {
+    return load(KEYS.COMPANIES, []);
+  },
+  getCompany(id) {
+    return this.listCompanies().find(c => c.id === id) || null;
+  },
+  saveCompany(company) {
+    const list = this.listCompanies();
+    const idx = list.findIndex(c => c.id === company.id);
+    if (idx >= 0) list[idx] = company;
+    else list.push(company);
+    save(KEYS.COMPANIES, list);
+  },
+  deleteCompany(id) {
+    save(KEYS.COMPANIES, this.listCompanies().filter(c => c.id !== id));
+  },
+
+  // 기존 targetCompany 문자열 → Company 엔티티로 마이그레이션
+  migrateCompanies() {
+    const versions = this.listVersions();
+    const companies = this.listCompanies();
+    let changed = false;
+    for (const v of versions) {
+      if (v.companyId) continue;
+      if (!v.targetCompany) continue;
+      let company = companies.find(c => c.name === v.targetCompany);
+      if (!company) {
+        company = createCompany({ name: v.targetCompany });
+        companies.push(company);
+        changed = true;
+      }
+      v.companyId = company.id;
+      changed = true;
+    }
+    if (changed) {
+      save(KEYS.COMPANIES, companies);
+      save(KEYS.VERSIONS, versions);
+    }
   },
 
   // ── Versions ─────────────────────────────────────────
@@ -136,13 +178,15 @@ const Store = {
     return JSON.stringify({
       profile: this.getProfile(),
       versions: this.listVersions(),
+      companies: this.listCompanies(),
       exportedAt: new Date().toISOString(),
     }, null, 2);
   },
   importAll(jsonStr) {
     const data = JSON.parse(jsonStr);
-    if (data.profile)  save(KEYS.PROFILE,  data.profile);
-    if (data.versions) save(KEYS.VERSIONS, data.versions);
+    if (data.profile)   save(KEYS.PROFILE,   data.profile);
+    if (data.versions)  save(KEYS.VERSIONS,  data.versions);
+    if (data.companies) save(KEYS.COMPANIES, data.companies);
   },
 };
 

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>회사·버전 샘플 데이터 주입 중...</title></head>
+<body>
+<script>
+// ── 회사 샘플 데이터 ──────────────────────────────────
+const companies = [
+  { id: "c1", name: "카카오페이",      createdAt: "2025-10-01T09:00:00.000Z" },
+  { id: "c2", name: "토스",            createdAt: "2025-10-10T09:00:00.000Z" },
+  { id: "c3", name: "당근마켓",        createdAt: "2025-11-01T09:00:00.000Z" },
+  { id: "c4", name: "쿠팡",            createdAt: "2025-11-20T09:00:00.000Z" },
+];
+
+// ── 버전 샘플 데이터 (회사별 2–3개) ──────────────────────
+const versions = [
+
+  // ── 카카오페이 (c1) ──
+  {
+    id: "vc1_1",
+    name: "카카오페이 PO 지원용",
+    companyId: "c1",
+    targetCompany: "카카오페이",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-10-05T10:00:00.000Z",
+    updatedAt: "2025-10-12T15:00:00.000Z",
+    status: "submitted",
+    selectedTitleId: "t1",
+    selectedSummaryId: "s2",
+    selectedExperienceIds: ["exp1", "exp2", "exp3"],
+    expOrder: ["exp1", "exp2", "exp3"],
+    selectedProjectIds: ["p1", "p2", "p6"],
+    selectedSkillGroupIds: ["sk1", "sk2"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: ["cert1", "cert2"],
+    overrides: {},
+    deadline: "2025-10-15",
+    notes: "핀테크 도메인 강조. 결제·정산 관련 프로젝트 경험 부각. 데이터 기반 지표 개선 사례 준비.",
+    appliedAt: "2025-10-13",
+    result: "서류 합격"
+  },
+  {
+    id: "vc1_2",
+    name: "카카오페이 시니어 PM",
+    companyId: "c1",
+    targetCompany: "카카오페이",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-10-20T11:00:00.000Z",
+    updatedAt: "2025-10-28T09:30:00.000Z",
+    status: "submitted",
+    selectedTitleId: "t2",
+    selectedSummaryId: "s1",
+    selectedExperienceIds: ["exp1", "exp2"],
+    expOrder: ["exp1", "exp2"],
+    selectedProjectIds: ["p1", "p3", "p6"],
+    selectedSkillGroupIds: ["sk1", "sk2", "sk3"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: ["cert2"],
+    overrides: {},
+    deadline: "2025-10-30",
+    notes: "시니어 포지션 지원. B2B 경험과 팀 리드 역량 중심 재구성.",
+    appliedAt: "2025-10-28",
+    result: "불합격"
+  },
+
+  // ── 토스 (c2) ──
+  {
+    id: "vc2_1",
+    name: "토스 PO (뱅킹) 지원용",
+    companyId: "c2",
+    targetCompany: "토스",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-11-03T10:00:00.000Z",
+    updatedAt: "2025-11-08T14:00:00.000Z",
+    status: "submitted",
+    selectedTitleId: "t1",
+    selectedSummaryId: "s2",
+    selectedExperienceIds: ["exp1", "exp2", "exp4"],
+    expOrder: ["exp1", "exp2", "exp4"],
+    selectedProjectIds: ["p1", "p4", "p6"],
+    selectedSkillGroupIds: ["sk1", "sk2", "sk3"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: ["cert2"],
+    overrides: {},
+    deadline: "2025-11-10",
+    notes: "토스 특유의 문제 정의 → 솔루션 접근 방식에 맞춰 작성. 지표 개선 수치 적극 강조.",
+    appliedAt: "2025-11-07",
+    result: "1차 면접"
+  },
+  {
+    id: "vc2_2",
+    name: "토스 PO (증권) 지원용",
+    companyId: "c2",
+    targetCompany: "토스",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-11-12T09:00:00.000Z",
+    updatedAt: "2025-11-15T11:00:00.000Z",
+    status: "ready",
+    selectedTitleId: "t2",
+    selectedSummaryId: "s1",
+    selectedExperienceIds: ["exp1", "exp2"],
+    expOrder: ["exp1", "exp2"],
+    selectedProjectIds: ["p1", "p2", "p5"],
+    selectedSkillGroupIds: ["sk1", "sk3"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: [],
+    overrides: {},
+    deadline: "2025-11-20",
+    notes: "증권 챕터 지원 재도전. 리텐션·전환율 지표 중심으로 재구성 예정.",
+    appliedAt: "",
+    result: ""
+  },
+  {
+    id: "vc2_3",
+    name: "토스 CPO 지원용",
+    companyId: "c2",
+    targetCompany: "토스",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-12-01T10:00:00.000Z",
+    updatedAt: "2025-12-01T10:00:00.000Z",
+    status: "draft",
+    selectedTitleId: "t3",
+    selectedSummaryId: "s1",
+    selectedExperienceIds: ["exp1", "exp2"],
+    expOrder: ["exp1", "exp2"],
+    selectedProjectIds: ["p1", "p6", "p7"],
+    selectedSkillGroupIds: ["sk1", "sk2", "sk3", "sk4"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: [],
+    overrides: {},
+    deadline: "",
+    notes: "CPO 포지션용 초안. 프로덕트 전략·조직 리드 경험 중심으로 작성할 예정.",
+    appliedAt: "",
+    result: ""
+  },
+
+  // ── 당근마켓 (c3) ──
+  {
+    id: "vc3_1",
+    name: "당근 PO (로컬커머스) 지원용",
+    companyId: "c3",
+    targetCompany: "당근마켓",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-11-25T09:00:00.000Z",
+    updatedAt: "2025-11-30T16:00:00.000Z",
+    status: "ready",
+    selectedTitleId: "t1",
+    selectedSummaryId: "s2",
+    selectedExperienceIds: ["exp1", "exp2", "exp3"],
+    expOrder: ["exp1", "exp2", "exp3"],
+    selectedProjectIds: ["p2", "p3", "p6"],
+    selectedSkillGroupIds: ["sk1", "sk2"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: ["cert1"],
+    overrides: {},
+    deadline: "2025-12-10",
+    notes: "로컬 커머스 특성에 맞게 구성. 전환율 개선·UX 단순화 사례 중심.",
+    appliedAt: "",
+    result: ""
+  },
+  {
+    id: "vc3_2",
+    name: "당근 PM (광고) 지원용",
+    companyId: "c3",
+    targetCompany: "당근마켓",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-12-02T11:00:00.000Z",
+    updatedAt: "2025-12-05T10:00:00.000Z",
+    status: "draft",
+    selectedTitleId: "t2",
+    selectedSummaryId: "s1",
+    selectedExperienceIds: ["exp1", "exp2"],
+    expOrder: ["exp1", "exp2"],
+    selectedProjectIds: ["p1", "p4", "p7"],
+    selectedSkillGroupIds: ["sk1", "sk2", "sk3"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: [],
+    overrides: {},
+    deadline: "2025-12-20",
+    notes: "광고 프로덕트팀 지원. 수익화·광고 퍼포먼스 지표 경험 추가 보강 필요.",
+    appliedAt: "",
+    result: ""
+  },
+
+  // ── 쿠팡 (c4) ──
+  {
+    id: "vc4_1",
+    name: "쿠팡 PM (물류) 지원용",
+    companyId: "c4",
+    targetCompany: "쿠팡",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-12-08T09:00:00.000Z",
+    updatedAt: "2025-12-10T14:00:00.000Z",
+    status: "ready",
+    selectedTitleId: "t1",
+    selectedSummaryId: "s2",
+    selectedExperienceIds: ["exp1", "exp2", "exp3"],
+    expOrder: ["exp1", "exp2", "exp3"],
+    selectedProjectIds: ["p1", "p5", "p6"],
+    selectedSkillGroupIds: ["sk1", "sk2", "sk4"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: ["cert1", "cert2"],
+    overrides: {},
+    deadline: "2025-12-22",
+    notes: "물류 도메인. 운영 효율화·배송 리드타임 단축 관련 프로젝트 최우선 배치.",
+    appliedAt: "",
+    result: ""
+  },
+  {
+    id: "vc4_2",
+    name: "쿠팡 PM (커머스) 지원용",
+    companyId: "c4",
+    targetCompany: "쿠팡",
+    baseProfileId: "seed_profile_001",
+    templateId: "modern",
+    createdAt: "2025-12-09T10:00:00.000Z",
+    updatedAt: "2025-12-09T10:00:00.000Z",
+    status: "draft",
+    selectedTitleId: "t2",
+    selectedSummaryId: "s1",
+    selectedExperienceIds: ["exp1", "exp2"],
+    expOrder: ["exp1", "exp2"],
+    selectedProjectIds: ["p2", "p3", "p6", "p7"],
+    selectedSkillGroupIds: ["sk1", "sk2", "sk3"],
+    selectedEducationIds: ["edu1"],
+    selectedCertIds: [],
+    overrides: {},
+    deadline: "",
+    notes: "커머스팀 PO 지원 초안. 구매전환·장바구니 이탈 개선 경험 중심 재구성 예정.",
+    appliedAt: "",
+    result: ""
+  },
+];
+
+// ── 주입 ──────────────────────────────────────────────
+const rawC = localStorage.getItem('rca_companies');
+const existingC = rawC ? JSON.parse(rawC) : [];
+const mergedC = [...companies, ...existingC.filter(c => !companies.find(nc => nc.id === c.id))];
+localStorage.setItem('rca_companies', JSON.stringify(mergedC));
+
+const rawV = localStorage.getItem('rca_versions');
+const existingV = rawV ? JSON.parse(rawV) : [];
+const mergedV = [...versions, ...existingV.filter(v => !versions.find(nv => nv.id === v.id))];
+localStorage.setItem('rca_versions', JSON.stringify(mergedV));
+
+console.log(`✅ 회사 ${mergedC.length}개 · 버전 ${mergedV.length}개 주입 완료!`);
+location.href = 'index.html';
+</script>
+<p>샘플 데이터 주입 중...</p>
+</body>
+</html>

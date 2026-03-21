@@ -53,6 +53,7 @@ function createExperience(data = {}) {
     description: data.description || '',
     achievements: data.achievements || [],
     tags: data.tags || [],
+    logo: data.logo || '',
   };
 }
 
@@ -90,6 +91,7 @@ function createEducation(data = {}) {
     degree: data.degree || '',
     startDate: data.startDate || '',
     endDate: data.endDate || '',
+    graduationStatus: data.graduationStatus || '',
   };
 }
 
@@ -102,10 +104,19 @@ function createCertification(data = {}) {
   };
 }
 
+function createCompany(data = {}) {
+  return {
+    id: data.id || uuid(),
+    name: data.name || '',
+    createdAt: data.createdAt || nowISO(),
+  };
+}
+
 function createVersion(data = {}) {
   return {
     id: data.id || uuid(),
     name: data.name || '새 버전',
+    companyId: data.companyId || '',
     targetCompany: data.targetCompany || '',
     baseProfileId: data.baseProfileId || '',
     templateId: data.templateId || 'modern',
