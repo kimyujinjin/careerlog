@@ -197,9 +197,15 @@ function showToast(msg) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const hideLoading = () => {
+    const el = document.getElementById('app-loading');
+    if (el) { el.classList.add('loading-done'); setTimeout(() => el.remove(), 400); }
+  };
+
   // 로그인 상태 확인
   const user = await Auth.init();
   if (!user) {
+    hideLoading();
     Auth.renderLoginScreen();
     return;
   }
@@ -215,4 +221,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Supabase에서 데이터 로드
   await Store.loadAll();
   App.init();
+  hideLoading();
 });

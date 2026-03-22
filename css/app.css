@@ -1,3 +1,25 @@
+/* ── 로딩 화면 ───────────────────────────────────────── */
+#app-loading {
+  position: fixed; inset: 0; z-index: 9999;
+  background: white;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+  transition: opacity 0.4s, visibility 0.4s;
+}
+#app-loading.loading-done { opacity: 0; visibility: hidden; }
+.loading-logo { height: 36px; width: auto; }
+.loading-bar {
+  width: 200px; height: 3px; background: #ede5ff; border-radius: 99px; overflow: hidden;
+}
+.loading-bar__fill {
+  height: 100%; width: 0%; background: #5500ff; border-radius: 99px;
+  animation: loading-progress 1.6s ease-in-out infinite;
+}
+@keyframes loading-progress {
+  0%   { width: 0%;   margin-left: 0%; }
+  50%  { width: 60%;  margin-left: 20%; }
+  100% { width: 0%;   margin-left: 100%; }
+}
+
 /* ── 로그인 화면 ─────────────────────────────────────── */
 .auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f4f6fb; }
 .auth-box { background: white; border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(85,0,255,0.1); display: flex; flex-direction: column; gap: 16px; }
