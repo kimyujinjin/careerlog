@@ -62,10 +62,10 @@ const Store = {
     if (!uid) return;
     await _sb.from('companies').upsert({ id: company.id, user_id: uid, data: company });
   },
-  deleteCompany(id) {
+  async deleteCompany(id) {
     this._companies = this.listCompanies().filter(c => c.id !== id);
     const uid = Auth.getUser()?.id;
-    if (uid) _sb.from('companies').delete().eq('id', id).eq('user_id', uid);
+    if (uid) await _sb.from('companies').delete().eq('id', id).eq('user_id', uid);
   },
 
   migrateCompanies() {
@@ -113,13 +113,13 @@ const Store = {
     if (!uid) return;
     await _sb.from('versions').upsert({ id: version.id, user_id: uid, data: version, updated_at: new Date().toISOString() });
   },
-  deleteVersion(id) {
+  async deleteVersion(id) {
     const list = this.listVersions().filter(v => v.id !== id);
     this._versions = list;
     const activeId = this.getActiveVersionId();
     if (activeId === id) this.setActiveVersionId(list[0]?.id || null);
     const uid = Auth.getUser()?.id;
-    if (uid) _sb.from('versions').delete().eq('id', id).eq('user_id', uid);
+    if (uid) await _sb.from('versions').delete().eq('id', id).eq('user_id', uid);
   },
   duplicateVersion(id, newName) {
     const src = this.getVersion(id);
@@ -208,9 +208,19 @@ const Store = {
   },
   async importAll(jsonStr) {
     const data = JSON.parse(jsonStr);
+    const uid = Auth.getUser()?.id;
     if (data.profile)   { this._profile = data.profile;     await this._saveProfileRemote(data.profile); }
-    if (data.companies) { this._companies = data.companies;  for (const c of data.companies) await this._saveCompanyRemote(c); }
-    if (data.versions)  { this._versions = data.versions;   for (const v of data.versions) await this._saveVersionRemote(v); }
+    if (data.companies) {
+      // 현재 유저 ID로 강제 덮어쓰기
+      const companies = data.companies.map(c => ({ ...c, user_id: uid }));
+      this._companies = companies;
+      for (const c of companies) await this._saveCompanyRemote(c);
+    }
+    if (data.versions)  {
+      const versions = data.versions.map(v => ({ ...v, user_id: uid }));
+      this._versions = versions;
+      for (const v of versions) await this._saveVersionRemote(v);
+    }
   },
 };
 
