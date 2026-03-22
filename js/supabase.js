@@ -24,7 +24,7 @@ const Auth = {
   async signInWithGoogle() {
     await _sb.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + window.location.pathname },
+      options: { redirectTo: 'https://kimyujinjin.github.io/careerlog' },
     });
   },
 
