@@ -1,51 +1,73 @@
-// ── localStorage 키 ───────────────────────────────────
-const KEYS = {
-  PROFILE: 'rca_profile',
-  VERSIONS: 'rca_versions',
-  COMPANIES: 'rca_companies',
-  ACTIVE_VERSION: 'rca_active_version',
-};
-
-// ── 내부 헬퍼 ─────────────────────────────────────────
-function load(key, fallback) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
-  catch { return fallback; }
-}
-function save(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-// ── Profile ───────────────────────────────────────────
+// ── Store: Supabase 기반 (비동기) ─────────────────────
+// localStorage는 activeVersionId 캐시용으로만 사용
 const Store = {
-  // 프로필 (앱당 1개)
+  _profile: null,
+  _companies: null,
+  _versions: null,
+
+  // ── 초기 로드 (앱 시작 시 1회) ────────────────────────
+  async loadAll() {
+    const uid = Auth.getUser()?.id;
+    if (!uid) return;
+
+    const [profRes, compRes, verRes] = await Promise.all([
+      _sb.from('profiles').select('data').eq('user_id', uid).single(),
+      _sb.from('companies').select('data').eq('user_id', uid).order('created_at'),
+      _sb.from('versions').select('data').eq('user_id', uid).order('created_at', { ascending: false }),
+    ]);
+
+    this._profile  = profRes.data  ? profRes.data.data  : null;
+    this._companies = compRes.data ? compRes.data.map(r => r.data) : [];
+    this._versions  = verRes.data  ? verRes.data.map(r => r.data)  : [];
+
+    if (!this._profile) {
+      const p = createProfile();
+      this._profile = p;
+      await this._saveProfileRemote(p);
+    }
+  },
+
+  // ── Profile ───────────────────────────────────────────
   getProfile() {
-    const raw = load(KEYS.PROFILE, null);
-    return raw ? raw : createProfile();
+    return this._profile || createProfile();
   },
   saveProfile(profile) {
     profile.updatedAt = new Date().toISOString();
-    save(KEYS.PROFILE, profile);
+    this._profile = profile;
+    this._saveProfileRemote(profile);
+  },
+  async _saveProfileRemote(profile) {
+    const uid = Auth.getUser()?.id;
+    if (!uid) return;
+    await _sb.from('profiles').upsert({ user_id: uid, data: profile, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
   },
 
-  // ── Companies ────────────────────────────────────────
+  // ── Companies ─────────────────────────────────────────
   listCompanies() {
-    return load(KEYS.COMPANIES, []);
+    return this._companies || [];
   },
   getCompany(id) {
     return this.listCompanies().find(c => c.id === id) || null;
   },
   saveCompany(company) {
-    const list = this.listCompanies();
+    const list = this._companies || [];
     const idx = list.findIndex(c => c.id === company.id);
     if (idx >= 0) list[idx] = company;
     else list.push(company);
-    save(KEYS.COMPANIES, list);
+    this._companies = list;
+    this._saveCompanyRemote(company);
+  },
+  async _saveCompanyRemote(company) {
+    const uid = Auth.getUser()?.id;
+    if (!uid) return;
+    await _sb.from('companies').upsert({ id: company.id, user_id: uid, data: company });
   },
   deleteCompany(id) {
-    save(KEYS.COMPANIES, this.listCompanies().filter(c => c.id !== id));
+    this._companies = this.listCompanies().filter(c => c.id !== id);
+    const uid = Auth.getUser()?.id;
+    if (uid) _sb.from('companies').delete().eq('id', id).eq('user_id', uid);
   },
 
-  // 기존 targetCompany 문자열 → Company 엔티티로 마이그레이션
   migrateCompanies() {
     const versions = this.listVersions();
     const companies = this.listCompanies();
@@ -57,38 +79,47 @@ const Store = {
       if (!company) {
         company = createCompany({ name: v.targetCompany });
         companies.push(company);
+        this._saveCompanyRemote(company);
         changed = true;
       }
       v.companyId = company.id;
       changed = true;
     }
     if (changed) {
-      save(KEYS.COMPANIES, companies);
-      save(KEYS.VERSIONS, versions);
+      this._companies = companies;
+      this._versions = versions;
+      versions.forEach(v => this._saveVersionRemote(v));
     }
   },
 
-  // ── Versions ─────────────────────────────────────────
+  // ── Versions ──────────────────────────────────────────
   listVersions() {
-    return load(KEYS.VERSIONS, []);
+    return this._versions || [];
   },
   getVersion(id) {
     return this.listVersions().find(v => v.id === id) || null;
   },
   saveVersion(version) {
-    const list = this.listVersions();
+    const list = this._versions || [];
     const idx = list.findIndex(v => v.id === version.id);
     version.updatedAt = new Date().toISOString();
     if (idx >= 0) list[idx] = version;
     else list.unshift(version);
-    save(KEYS.VERSIONS, list);
+    this._versions = list;
+    this._saveVersionRemote(version);
+  },
+  async _saveVersionRemote(version) {
+    const uid = Auth.getUser()?.id;
+    if (!uid) return;
+    await _sb.from('versions').upsert({ id: version.id, user_id: uid, data: version, updated_at: new Date().toISOString() });
   },
   deleteVersion(id) {
     const list = this.listVersions().filter(v => v.id !== id);
-    save(KEYS.VERSIONS, list);
-    if (this.getActiveVersionId() === id) {
-      save(KEYS.ACTIVE_VERSION, list[0]?.id || null);
-    }
+    this._versions = list;
+    const activeId = this.getActiveVersionId();
+    if (activeId === id) this.setActiveVersionId(list[0]?.id || null);
+    const uid = Auth.getUser()?.id;
+    if (uid) _sb.from('versions').delete().eq('id', id).eq('user_id', uid);
   },
   duplicateVersion(id, newName) {
     const src = this.getVersion(id);
@@ -105,45 +136,40 @@ const Store = {
     return copy;
   },
 
-  // ── 활성 버전 ─────────────────────────────────────────
+  // ── 활성 버전 (로컬 캐시) ─────────────────────────────
   getActiveVersionId() {
-    return load(KEYS.ACTIVE_VERSION, null);
+    return localStorage.getItem('rca_active_version') || null;
   },
   setActiveVersionId(id) {
-    save(KEYS.ACTIVE_VERSION, id);
+    if (id) localStorage.setItem('rca_active_version', id);
+    else localStorage.removeItem('rca_active_version');
   },
 
-  // ── resolveVersion: 오버라이드 적용 후 렌더링용 데이터 반환 ──
+  // ── resolveVersion ────────────────────────────────────
   resolveVersion(versionId) {
     const version = this.getVersion(versionId);
     if (!version) return null;
     const profile = this.getProfile();
 
-    // 선택된 항목만 필터 (빈 배열 = 전체, ['__none__'] = 전체 제외)
     const pick = (arr, ids) => {
-      if (ids.length === 0) return arr;
+      if (!ids || ids.length === 0) return arr;
       if (ids[0] === '__none__') return [];
       return arr.filter(item => ids.includes(item.id));
     };
 
-    // 선택된 직책 찾기
     const titles = profile.titles || [];
     const selectedTitle = version.selectedTitleId
-      ? titles.find(t => t.id === version.selectedTitleId)
-      : null;
+      ? titles.find(t => t.id === version.selectedTitleId) : null;
 
-    // 선택된 자기소개 찾기
     const summaries = profile.summaries || [];
     const selectedSummary = version.selectedSummaryId
-      ? summaries.find(s => s.id === version.selectedSummaryId)
-      : null;
+      ? summaries.find(s => s.id === version.selectedSummaryId) : null;
 
-    // 깊은 복사 후 오버라이드 패치
     const resolved = {
       personal: {
         ...profile.personal,
-        title:   selectedTitle   ? selectedTitle.value   : (profile.personal.title || ''),
-        summary: selectedSummary ? selectedSummary.body  : '',
+        title:   selectedTitle   ? selectedTitle.value  : (profile.personal.title || ''),
+        summary: selectedSummary ? selectedSummary.body : '',
       },
       experiences: (() => {
         let exps = pick(profile.experiences, version.selectedExperienceIds).map(e => ({ ...e, achievements: [...e.achievements] }));
@@ -152,20 +178,18 @@ const Store = {
           exps.sort((a, b) => {
             const ai = order.indexOf(a.id), bi = order.indexOf(b.id);
             if (ai === -1 && bi === -1) return 0;
-            if (ai === -1) return 1;
-            if (bi === -1) return -1;
+            if (ai === -1) return 1; if (bi === -1) return -1;
             return ai - bi;
           });
         }
         return exps;
       })(),
-      projects:    pick(profile.projects,    version.selectedProjectIds   ).map(p => ({ ...p, contributions: [...p.contributions], metrics: [...p.metrics] })),
-      skills:      pick(profile.skills,      version.selectedSkillGroupIds).map(s => ({ ...s, items: [...s.items] })),
-      educations:  pick(profile.educations,  version.selectedEducationIds ).map(e => ({ ...e })),
+      projects:       pick(profile.projects,       version.selectedProjectIds   ).map(p => ({ ...p, contributions: [...p.contributions], metrics: [...p.metrics] })),
+      skills:         pick(profile.skills,         version.selectedSkillGroupIds).map(s => ({ ...s, items: [...s.items] })),
+      educations:     pick(profile.educations,     version.selectedEducationIds ).map(e => ({ ...e })),
       certifications: pick(profile.certifications || [], version.selectedCertIds || []).map(c => ({ ...c })),
     };
 
-    // 오버라이드 적용 (dot notation)
     for (const [path, value] of Object.entries(version.overrides || {})) {
       setByPath(resolved, path, value);
     }
@@ -182,15 +206,14 @@ const Store = {
       exportedAt: new Date().toISOString(),
     }, null, 2);
   },
-  importAll(jsonStr) {
+  async importAll(jsonStr) {
     const data = JSON.parse(jsonStr);
-    if (data.profile)   save(KEYS.PROFILE,   data.profile);
-    if (data.versions)  save(KEYS.VERSIONS,  data.versions);
-    if (data.companies) save(KEYS.COMPANIES, data.companies);
+    if (data.profile)   { this._profile = data.profile;     await this._saveProfileRemote(data.profile); }
+    if (data.companies) { this._companies = data.companies;  for (const c of data.companies) await this._saveCompanyRemote(c); }
+    if (data.versions)  { this._versions = data.versions;   for (const v of data.versions) await this._saveVersionRemote(v); }
   },
 };
 
-// dot notation으로 중첩 객체 값 설정
 function setByPath(obj, path, value) {
   const parts = path.split('.');
   let cur = obj;

@@ -197,4 +197,23 @@ function showToast(msg) {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
 }
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', async () => {
+  // 로그인 상태 확인
+  const user = await Auth.init();
+  if (!user) {
+    Auth.renderLoginScreen();
+    return;
+  }
+  // 헤더에 로그아웃 버튼 추가
+  const headerActions = document.querySelector('.header-actions');
+  if (headerActions) {
+    const logoutBtn = document.createElement('button');
+    logoutBtn.className = 'btn-outline';
+    logoutBtn.textContent = '로그아웃';
+    logoutBtn.onclick = () => Auth.signOut();
+    headerActions.appendChild(logoutBtn);
+  }
+  // Supabase에서 데이터 로드
+  await Store.loadAll();
+  App.init();
+});

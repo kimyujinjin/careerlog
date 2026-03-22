@@ -1,3 +1,22 @@
+/* ── 로그인 화면 ─────────────────────────────────────── */
+.auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f4f6fb; }
+.auth-box { background: white; border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(85,0,255,0.1); display: flex; flex-direction: column; gap: 16px; }
+.auth-logo { height: 32px; width: auto; margin-bottom: 4px; }
+.auth-sub { font-size: 14px; color: #8a93b0; margin-bottom: 8px; }
+.auth-tabs { display: flex; gap: 0; border-bottom: 2px solid #f0f0f0; margin-bottom: 4px; }
+.auth-tab { flex: 1; padding: 10px; background: none; border: none; font-size: 15px; font-weight: 600; color: #aaa; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+.auth-tab.active { color: #5500ff; border-bottom-color: #5500ff; }
+.auth-input { width: 100%; padding: 12px 16px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 15px; outline: none; transition: border-color 0.15s; }
+.auth-input:focus { border-color: #5500ff; }
+.auth-btn { width: 100%; padding: 13px; background: #5500ff; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; transition: background 0.15s; }
+.auth-btn:hover { background: #4400cc; }
+.auth-btn--google { background: white; color: #1a1a1a; border: 1.5px solid #e0e0e0; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600; }
+.auth-btn--google:hover { background: #f5f5f5; }
+.auth-divider { display: flex; align-items: center; gap: 12px; color: #ccc; font-size: 13px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #e8e8e8; }
+.auth-error { padding: 10px 14px; background: #fff0f0; border: 1px solid #ffcdd2; border-radius: 8px; font-size: 14px; color: #e03e3e; }
+.hidden { display: none !important; }
+
 /* ── 리셋 & 기본 ───────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; font-family: 'Pretendard', -apple-system, sans-serif; font-size: 17px; color: #1e2035; background: #f4f6fb; }
