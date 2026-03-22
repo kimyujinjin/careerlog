@@ -7,7 +7,6 @@ const App = {
     const profile = Store.getProfile();
     if (!profile.id) Store.saveProfile(createProfile());
     Store.migrateCompanies();
-    this._seedSampleData();
 
     this.renderMasterTabs();
     this.renderMasterTab(this.currentMasterTab);
