@@ -1019,6 +1019,7 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
   margin-bottom: 10px;
 }
 .exp-proj-label { font-size: 13px; font-weight: 700; color: #b0b8cc; text-transform: uppercase; letter-spacing: 0.5px; }
+.exp-proj-add { padding: 10px 0 4px; }
 
 .list-card--proj {
   margin-bottom: 0; padding: 8px 0;

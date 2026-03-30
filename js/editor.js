@@ -398,13 +398,15 @@ const Editor = {
           <div class="exp-card__projects">
             <div class="exp-proj-header">
               <span class="exp-proj-label">주요 프로젝트</span>
-              <button class="btn-sm btn-outline" onclick="Editor.openProjModal(null, '${e.id}')">+ 프로젝트 추가</button>
             </div>
             <div class="exp-proj-body" id="proj-body-${e.id}">
               <div class="exp-proj-list" id="proj-list-${e.id}">${projListHtml}</div>
             </div>
             <div class="exp-proj-more" id="proj-more-${e.id}">
               <button class="exp-proj-more-btn" onclick="Editor.toggleProjMore('${e.id}')">더보기 ∨</button>
+            </div>
+            <div class="exp-proj-add">
+              <button class="btn-sm btn-outline" onclick="Editor.openProjModal(null, '${e.id}')">+ 프로젝트 추가</button>
             </div>
           </div>
         </div>`;
