@@ -347,10 +347,10 @@ const Editor = {
               ...(p.techStack || []),
               ...(p.tags || []),
             ].filter(Boolean);
-            const allBullets = [
-              ...(p.background ? [p.background] : []),
-              ...(p.mainTasks || []),
-              ...(p.achievements || []),
+            const detailRows = [
+              ...(p.background ? [`<div class="proj-card__detail-row"><span class="proj-card__detail-label">배경</span><span class="proj-card__detail-val">${esc(p.background)}</span></div>`] : []),
+              ...((p.mainTasks || []).filter(Boolean).map(t => `<div class="proj-card__detail-row"><span class="proj-card__detail-label">주요업무</span><span class="proj-card__detail-val">${esc(t)}</span></div>`)),
+              ...((p.achievements || []).filter(Boolean).map(a => `<div class="proj-card__detail-row"><span class="proj-card__detail-label">성과</span><span class="proj-card__detail-val">${esc(a)}</span></div>`)),
             ];
             return `
             <div class="list-card--proj" data-id="${p.id}">
@@ -364,7 +364,7 @@ const Editor = {
                   <button class="btn-sm btn-danger" onclick="Editor.deleteProject('${p.id}')">삭제</button>
                 </div>
               </div>
-              ${allBullets.length ? `<ul class="proj-card__bullets">${allBullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}
+              ${detailRows.length ? `<div class="proj-card__details">${detailRows.join('')}</div>` : ''}
             </div>`;
           }).join('');
 
@@ -645,10 +645,10 @@ const Editor = {
         p.company || '',
         p.projectType || '',
       ].filter(Boolean);
-      const allBullets = [
-        ...(p.background ? [p.background] : []),
-        ...(p.mainTasks || []),
-        ...(p.achievements || []),
+      const detailRows = [
+        ...(p.background ? [`<div class="proj-card__detail-row"><span class="proj-card__detail-label">배경</span><span class="proj-card__detail-val">${esc(p.background)}</span></div>`] : []),
+        ...((p.mainTasks || []).filter(Boolean).map(t => `<div class="proj-card__detail-row"><span class="proj-card__detail-label">주요업무</span><span class="proj-card__detail-val">${esc(t)}</span></div>`)),
+        ...((p.achievements || []).filter(Boolean).map(a => `<div class="proj-card__detail-row"><span class="proj-card__detail-label">성과</span><span class="proj-card__detail-val">${esc(a)}</span></div>`)),
       ];
       const chips = [...(p.techStack || []), ...(p.tags || [])];
       return `
@@ -666,7 +666,7 @@ const Editor = {
           </div>
           <div class="exp-card__projects exp-card__projects--standalone">
             <div class="exp-proj-body" id="proj-body-${p.id}">
-              ${allBullets.length ? `<ul class="proj-card__bullets">${allBullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : '<p class="empty-msg empty-msg--sm">내용이 없습니다.</p>'}
+              ${detailRows.length ? `<div class="proj-card__details">${detailRows.join('')}</div>` : '<p class="empty-msg empty-msg--sm">내용이 없습니다.</p>'}
               ${chips.length ? `<div class="proj-card__chips proj-card__chips--bottom">${chips.map(t => `<span class="chip chip--sm">${esc(t)}</span>`).join('')}</div>` : ''}
             </div>
             <div class="exp-proj-more" id="proj-more-${p.id}">
