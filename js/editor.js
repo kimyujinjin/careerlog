@@ -348,9 +348,9 @@ const Editor = {
               ...(p.tags || []),
             ].filter(Boolean);
             const detailRows = [
-              ...(p.background ? [`<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 배경</span> : ${esc(p.background)}</p>`] : []),
-              ...((p.mainTasks || []).filter(Boolean).map(t => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 주요업무</span> : ${esc(t)}</p>`)),
-              ...((p.achievements || []).filter(Boolean).map(a => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 성과</span> : ${esc(a)}</p>`)),
+              ...(p.background ? [`<div class="r-exp-proj__section"><p class="r-exp-proj__section-title">[배경 및 목적]</p><ul class="r-exp-proj__bullets"><li>${esc(p.background)}</li></ul></div>`] : []),
+              ...((p.mainTasks || []).filter(Boolean).length ? [`<div class="r-exp-proj__section"><p class="r-exp-proj__section-title">[주요 업무]</p><ul class="r-exp-proj__bullets">${(p.mainTasks||[]).filter(Boolean).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`] : []),
+              ...((p.achievements || []).filter(Boolean).length ? [`<div class="r-exp-proj__section"><p class="r-exp-proj__section-title">[핵심 성과]</p><ul class="r-exp-proj__bullets">${(p.achievements||[]).filter(Boolean).map(a=>`<li>${esc(a)}</li>`).join('')}</ul></div>`] : []),
             ];
             return `
             <div class="list-card--proj" data-id="${p.id}">
@@ -648,9 +648,9 @@ const Editor = {
         p.projectType || '',
       ].filter(Boolean);
       const detailRows = [
-        ...(p.background ? [`<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 배경</span> : ${esc(p.background)}</p>`] : []),
-        ...((p.mainTasks || []).filter(Boolean).map(t => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 주요업무</span> : ${esc(t)}</p>`)),
-        ...((p.achievements || []).filter(Boolean).map(a => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 성과</span> : ${esc(a)}</p>`)),
+        ...(p.background ? [`<div class="r-exp-proj__section"><p class="r-exp-proj__section-title">[배경 및 목적]</p><ul class="r-exp-proj__bullets"><li>${esc(p.background)}</li></ul></div>`] : []),
+        ...((p.mainTasks || []).filter(Boolean).length ? [`<div class="r-exp-proj__section"><p class="r-exp-proj__section-title">[주요 업무]</p><ul class="r-exp-proj__bullets">${(p.mainTasks||[]).filter(Boolean).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`] : []),
+        ...((p.achievements || []).filter(Boolean).length ? [`<div class="r-exp-proj__section"><p class="r-exp-proj__section-title">[핵심 성과]</p><ul class="r-exp-proj__bullets">${(p.achievements||[]).filter(Boolean).map(a=>`<li>${esc(a)}</li>`).join('')}</ul></div>`] : []),
       ];
       const chips = [...(p.techStack || []), ...(p.tags || [])];
       return `
