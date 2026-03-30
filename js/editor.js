@@ -348,9 +348,9 @@ const Editor = {
               ...(p.tags || []),
             ].filter(Boolean);
             const detailRows = [
-              ...(p.background ? [`<div class="proj-card__detail-row"><span class="proj-card__detail-label">배경</span><span class="proj-card__detail-val">${esc(p.background)}</span></div>`] : []),
-              ...((p.mainTasks || []).filter(Boolean).map(t => `<div class="proj-card__detail-row"><span class="proj-card__detail-label">주요업무</span><span class="proj-card__detail-val">${esc(t)}</span></div>`)),
-              ...((p.achievements || []).filter(Boolean).map(a => `<div class="proj-card__detail-row"><span class="proj-card__detail-label">성과</span><span class="proj-card__detail-val">${esc(a)}</span></div>`)),
+              ...(p.background ? [`<p class="proj-card__line"><span class="proj-card__line-label">- 배경</span> : ${esc(p.background)}</p>`] : []),
+              ...((p.mainTasks || []).filter(Boolean).map(t => `<p class="proj-card__line"><span class="proj-card__line-label">- 주요업무</span> : ${esc(t)}</p>`)),
+              ...((p.achievements || []).filter(Boolean).map(a => `<p class="proj-card__line"><span class="proj-card__line-label">- 성과</span> : ${esc(a)}</p>`)),
             ];
             return `
             <div class="list-card--proj" data-id="${p.id}">
@@ -646,9 +646,9 @@ const Editor = {
         p.projectType || '',
       ].filter(Boolean);
       const detailRows = [
-        ...(p.background ? [`<div class="proj-card__detail-row"><span class="proj-card__detail-label">배경</span><span class="proj-card__detail-val">${esc(p.background)}</span></div>`] : []),
-        ...((p.mainTasks || []).filter(Boolean).map(t => `<div class="proj-card__detail-row"><span class="proj-card__detail-label">주요업무</span><span class="proj-card__detail-val">${esc(t)}</span></div>`)),
-        ...((p.achievements || []).filter(Boolean).map(a => `<div class="proj-card__detail-row"><span class="proj-card__detail-label">성과</span><span class="proj-card__detail-val">${esc(a)}</span></div>`)),
+        ...(p.background ? [`<p class="proj-card__line"><span class="proj-card__line-label">- 배경</span> : ${esc(p.background)}</p>`] : []),
+        ...((p.mainTasks || []).filter(Boolean).map(t => `<p class="proj-card__line"><span class="proj-card__line-label">- 주요업무</span> : ${esc(t)}</p>`)),
+        ...((p.achievements || []).filter(Boolean).map(a => `<p class="proj-card__line"><span class="proj-card__line-label">- 성과</span> : ${esc(a)}</p>`)),
       ];
       const chips = [...(p.techStack || []), ...(p.tags || [])];
       return `
