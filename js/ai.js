@@ -208,7 +208,7 @@ ${masterSummary}
     ).join('\n');
 
     const projs = (profile.projects || []).map(p =>
-      `[PRJ:${p.id}] ${p.name}(${p.role}) ${p.description?.slice(0,60)} 성과:${p.metrics.slice(0,2).join('/')}`
+      `[PRJ:${p.id}] ${p.name}(${p.role}) ${p.background?.slice(0,60)} 성과:${(p.achievements||[]).slice(0,2).join('/')}`
     ).join('\n');
 
     const skills = (profile.skills || []).map(s =>

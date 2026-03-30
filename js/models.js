@@ -68,8 +68,9 @@ function createProject(data = {}) {
     endDate: data.endDate || '',
     description: data.description || '',
     projectType: data.projectType || '',  // 필터용 (미리보기 미반영)
-    contributions: data.contributions || [],
-    metrics: data.metrics || [],
+    background: data.background || '',
+    mainTasks: data.mainTasks || [],
+    achievements: data.achievements || [],
     techStack: data.techStack || [],
     tags: data.tags || [],
   };

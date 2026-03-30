@@ -54,9 +54,9 @@ function renderProjectItem(p) {
         ${period ? `<span class="r-proj-period">${period}</span>` : ''}
       </div>
       ${p.role ? `<p class="r-proj-role-text">${esc(p.role)}</p>` : ''}
-      ${p.description ? `<div class="r-proj-block"><span class="r-proj-label">배경</span><p class="r-proj-desc">${esc(p.description).replace(/\n/g,'<br>')}</p></div>` : ''}
-      ${p.contributions && p.contributions.filter(Boolean).length ? `<div class="r-proj-block"><span class="r-proj-label">주요 실행</span>${bulletList(p.contributions)}</div>` : ''}
-      ${p.metrics && p.metrics.filter(Boolean).length ? `<div class="r-proj-block"><span class="r-proj-label">성과</span>${metricBadges(p.metrics)}</div>` : ''}
+      ${p.background ? `<div class="r-proj-block"><span class="r-proj-label">배경</span><p class="r-proj-desc">${esc(p.background).replace(/\n/g,'<br>')}</p></div>` : ''}
+      ${p.mainTasks && p.mainTasks.filter(Boolean).length ? `<div class="r-proj-block"><span class="r-proj-label">주요업무</span>${bulletList(p.mainTasks)}</div>` : ''}
+      ${p.achievements && p.achievements.filter(Boolean).length ? `<div class="r-proj-block"><span class="r-proj-label">성과</span>${bulletList(p.achievements)}</div>` : ''}
       ${p.techStack && p.techStack.filter(Boolean).length ? `<p class="r-tech">${p.techStack.filter(Boolean).map(esc).join(' · ')}</p>` : ''}
     </div>`;
 }
@@ -69,9 +69,9 @@ function renderExpProjectItem(p) {
     <div class="r-exp-proj">
       <p class="r-exp-proj__name">${esc(p.name)}</p>
       ${metaparts.length ? `<p class="r-exp-proj__meta">${metaparts.join('<span class="r-meta-sep"> | </span>')}</p>` : ''}
-      ${p.description ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 배경</span> : ${esc(p.description).replace(/\n/g,'<br>')}</p>` : ''}
-      ${p.contributions && p.contributions.filter(Boolean).length ? p.contributions.filter(Boolean).map(c => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 주요실행</span> : ${esc(c)}</p>`).join('') : ''}
-      ${p.metrics && p.metrics.filter(Boolean).length ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 성과</span> : ${p.metrics.filter(Boolean).map(esc).join(', ')}</p>` : ''}
+      ${p.background ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 배경</span> : ${esc(p.background).replace(/\n/g,'<br>')}</p>` : ''}
+      ${p.mainTasks && p.mainTasks.filter(Boolean).length ? p.mainTasks.filter(Boolean).map(t => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 주요업무</span> : ${esc(t)}</p>`).join('') : ''}
+      ${p.achievements && p.achievements.filter(Boolean).length ? p.achievements.filter(Boolean).map(a => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 성과</span> : ${esc(a)}</p>`).join('') : ''}
     </div>`;
 }
 
@@ -113,9 +113,9 @@ function renderExperiences(experiences, projects) {
       ${floatingProjects.map(p => `
         <div class="r-item">
           <p class="r-exp-proj__name">${esc(p.name)}</p>
-          ${p.description ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 배경</span> : ${esc(p.description)}</p>` : ''}
-          ${p.contributions && p.contributions.filter(Boolean).length ? p.contributions.filter(Boolean).map(c => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 주요실행</span> : ${esc(c)}</p>`).join('') : ''}
-          ${p.metrics && p.metrics.filter(Boolean).length ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 성과</span> : ${p.metrics.filter(Boolean).map(esc).join(', ')}</p>` : ''}
+          ${p.background ? `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 배경</span> : ${esc(p.background)}</p>` : ''}
+          ${p.mainTasks && p.mainTasks.filter(Boolean).length ? p.mainTasks.filter(Boolean).map(t => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 주요업무</span> : ${esc(t)}</p>`).join('') : ''}
+          ${p.achievements && p.achievements.filter(Boolean).length ? p.achievements.filter(Boolean).map(a => `<p class="r-exp-proj__line"><span class="r-exp-proj__label">- 성과</span> : ${esc(a)}</p>`).join('') : ''}
         </div>`).join('')}
     </section>`;
 

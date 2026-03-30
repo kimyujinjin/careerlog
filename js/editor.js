@@ -348,9 +348,9 @@ const Editor = {
               ...(p.tags || []),
             ].filter(Boolean);
             const allBullets = [
-              ...(p.description ? p.description.split('\n').filter(l => l.trim()) : []),
-              ...(p.contributions || []),
-              ...(p.metrics || []),
+              ...(p.background ? [p.background] : []),
+              ...(p.mainTasks || []),
+              ...(p.achievements || []),
             ];
             return `
             <div class="list-card--proj" data-id="${p.id}">
@@ -646,9 +646,9 @@ const Editor = {
         p.projectType || '',
       ].filter(Boolean);
       const allBullets = [
-        ...(p.description ? p.description.split('\n').filter(l => l.trim()) : []),
-        ...(p.contributions || []),
-        ...(p.metrics || []),
+        ...(p.background ? [p.background] : []),
+        ...(p.mainTasks || []),
+        ...(p.achievements || []),
       ];
       const chips = [...(p.techStack || []), ...(p.tags || [])];
       return `
@@ -786,26 +786,30 @@ const Editor = {
             </div>
           </div>
           <div class="form-row form-row--full">
-            <label>정량 성과 (배지로 표시됨)</label>
-            <div id="pm-metrics">
-              ${(p.metrics.length ? p.metrics : ['']).map(m => `
-                <div class="bullet-row">
-                  <input class="bullet-input" value="${esc(m)}" placeholder="예: MAU 30% 성장, 전환율 15%p 개선">
-                  <button class="btn-icon" onclick="Editor.removeBullet(this)">−</button>
-                </div>`).join('')}
-            </div>
-            <button class="btn-sm mt-4" onclick="Editor.addBullet('pm-metrics')">+ 성과 추가</button>
+            <label>배경</label>
+            <textarea id="pm-background" rows="2" placeholder="프로젝트 배경 및 목적">${esc(p.background || '')}</textarea>
           </div>
           <div class="form-row form-row--full">
-            <label>주요 기여</label>
-            <div id="pm-contributions">
-              ${(p.contributions.length ? p.contributions : ['']).map(c => `
+            <label>주요업무</label>
+            <div id="pm-mainTasks">
+              ${(p.mainTasks && p.mainTasks.length ? p.mainTasks : ['']).map(t => `
                 <div class="bullet-row">
-                  <input class="bullet-input" value="${esc(c)}" placeholder="• 기여 내용">
+                  <input class="bullet-input" value="${esc(t)}" placeholder="주요 업무 내용">
                   <button class="btn-icon" onclick="Editor.removeBullet(this)">−</button>
                 </div>`).join('')}
             </div>
-            <button class="btn-sm mt-4" onclick="Editor.addBullet('pm-contributions')">+ 항목 추가</button>
+            <button class="btn-sm mt-4" onclick="Editor.addBullet('pm-mainTasks')">+ 항목 추가</button>
+          </div>
+          <div class="form-row form-row--full">
+            <label>성과</label>
+            <div id="pm-achievements">
+              ${(p.achievements && p.achievements.length ? p.achievements : ['']).map(a => `
+                <div class="bullet-row">
+                  <input class="bullet-input" value="${esc(a)}" placeholder="성과 내용">
+                  <button class="btn-icon" onclick="Editor.removeBullet(this)">−</button>
+                </div>`).join('')}
+            </div>
+            <button class="btn-sm mt-4" onclick="Editor.addBullet('pm-achievements')">+ 항목 추가</button>
           </div>
           <div class="form-row form-row--full">
             <label>사용 도구 (쉼표 구분)</label>
@@ -827,9 +831,10 @@ const Editor = {
 
   saveProject() {
     const id = document.getElementById('pm-id').value;
-    const metrics = [...document.querySelectorAll('#pm-metrics .bullet-input')]
+    const background = document.getElementById('pm-background').value.trim();
+    const mainTasks = [...document.querySelectorAll('#pm-mainTasks .bullet-input')]
       .map(i => i.value.trim()).filter(Boolean);
-    const contributions = [...document.querySelectorAll('#pm-contributions .bullet-input')]
+    const achievements = [...document.querySelectorAll('#pm-achievements .bullet-input')]
       .map(i => i.value.trim()).filter(Boolean);
     const techStack = document.getElementById('pm-tech').value.split(',').map(t=>t.trim()).filter(Boolean);
     const tags = document.getElementById('pm-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
@@ -844,7 +849,7 @@ const Editor = {
       endDate:   document.getElementById('pm-end').value,
       description: '',
       projectType: document.getElementById('pm-type').value,
-      metrics, contributions, techStack, tags,
+      background, mainTasks, achievements, techStack, tags,
     });
 
     const profile = Store.getProfile();

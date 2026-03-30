@@ -184,7 +184,7 @@ const Store = {
         }
         return exps;
       })(),
-      projects:       pick(profile.projects,       version.selectedProjectIds   ).map(p => ({ ...p, contributions: [...p.contributions], metrics: [...p.metrics] })),
+      projects:       pick(profile.projects,       version.selectedProjectIds   ).map(p => ({ ...p, mainTasks: [...(p.mainTasks||[])], achievements: [...(p.achievements||[])] })),
       skills:         pick(profile.skills,         version.selectedSkillGroupIds).map(s => ({ ...s, items: [...s.items] })),
       educations:     pick(profile.educations,     version.selectedEducationIds ).map(e => ({ ...e })),
       certifications: pick(profile.certifications || [], version.selectedCertIds || []).map(c => ({ ...c })),
