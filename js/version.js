@@ -829,20 +829,35 @@ const VersionManager = {
     const [moved] = order.splice(srcIdx, 1);
     order.splice(tgtIdx, 0, moved);
 
-    version.expOrder = order;
-    Store.saveVersion(version);
-    App.refreshPreview();
+  // DOM 미리 이동 (시각적 피드백)
+  const list = document.getElementById('exp-proj-modal-list');
+  if (list) {
+    const items = [...list.querySelectorAll('.epp-exp-item')];
+    order.forEach(id => {
+      const el = items.find(el => el.dataset.expId === id);
+      if (el) list.appendChild(el);
+    });
+  }
 
-    // 모달 목록 재렌더
-    const list = document.getElementById('exp-proj-modal-list');
-    if (list) {
-      // 현재 순서대로 DOM 재정렬
-      const items = [...list.querySelectorAll('.epp-exp-item')];
-      order.forEach(id => {
-        const el = items.find(el => el.dataset.expId === id);
-        if (el) list.appendChild(el);
-      });
+  const prevOrder = [...(version.expOrder && version.expOrder.length > 0 ? version.expOrder : allIds)];
+
+  this._showReorderConfirm(
+    () => {
+      version.expOrder = order;
+      Store.saveVersion(version);
+      App.refreshPreview();
+    },
+    () => {
+      // 취소: DOM 원래 순서로 복원
+      if (list) {
+        const items = [...list.querySelectorAll('.epp-exp-item')];
+        prevOrder.forEach(id => {
+          const el = items.find(el => el.dataset.expId === id);
+          if (el) list.appendChild(el);
+        });
+      }
     }
+  );
   },
 
   onExpOrderDragEnd(event) {
