@@ -157,6 +157,16 @@ const Store = {
       return arr.filter(item => ids.includes(item.id));
     };
 
+    const sortByOrder = (arr, order) => {
+      if (!order || order.length === 0) return arr;
+      return [...arr].sort((a, b) => {
+        const ai = order.indexOf(a.id), bi = order.indexOf(b.id);
+        if (ai === -1 && bi === -1) return 0;
+        if (ai === -1) return 1; if (bi === -1) return -1;
+        return ai - bi;
+      });
+    };
+
     const titles = profile.titles || [];
     const selectedTitle = version.selectedTitleId
       ? titles.find(t => t.id === version.selectedTitleId) : null;
@@ -171,23 +181,14 @@ const Store = {
         title:   selectedTitle   ? selectedTitle.value  : (profile.personal.title || ''),
         summary: selectedSummary ? selectedSummary.body : '',
       },
-      experiences: (() => {
-        let exps = pick(profile.experiences, version.selectedExperienceIds).map(e => ({ ...e, achievements: [...e.achievements] }));
-        const order = version.expOrder || [];
-        if (order.length > 0) {
-          exps.sort((a, b) => {
-            const ai = order.indexOf(a.id), bi = order.indexOf(b.id);
-            if (ai === -1 && bi === -1) return 0;
-            if (ai === -1) return 1; if (bi === -1) return -1;
-            return ai - bi;
-          });
-        }
-        return exps;
-      })(),
+      experiences: sortByOrder(
+        pick(profile.experiences, version.selectedExperienceIds).map(e => ({ ...e, achievements: [...e.achievements] })),
+        version.expOrder
+      ),
       projects:       pick(profile.projects,       version.selectedProjectIds   ).map(p => ({ ...p, mainTasks: [...(p.mainTasks||[])], achievements: [...(p.achievements||[])] })),
-      skills:         pick(profile.skills,         version.selectedSkillGroupIds).map(s => ({ ...s, items: [...s.items] })),
-      educations:     pick(profile.educations,     version.selectedEducationIds ).map(e => ({ ...e })),
-      certifications: pick(profile.certifications || [], version.selectedCertIds || []).map(c => ({ ...c })),
+      skills:         sortByOrder(pick(profile.skills, version.selectedSkillGroupIds).map(s => ({ ...s, items: [...s.items] })), version.skillOrder),
+      educations:     sortByOrder(pick(profile.educations, version.selectedEducationIds).map(e => ({ ...e })), version.eduOrder),
+      certifications: sortByOrder(pick(profile.certifications || [], version.selectedCertIds || []).map(c => ({ ...c })), version.certOrder),
     };
 
     for (const [path, value] of Object.entries(version.overrides || {})) {
