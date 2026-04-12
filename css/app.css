@@ -1113,6 +1113,23 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 .epp-exp-item:last-child { border-bottom: none; }
 .epp-exp-item.dragging { opacity: 0.4; }
 .epp-exp-item.drag-over { border-top: 2px solid #5500ff; background: #f0ebff; }
+
+/* ── 순서 변경 확인 모달 ─────────────────────────────── */
+.reorder-confirm-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+.reorder-confirm-box {
+  background: #fff; border-radius: 16px; padding: 28px 32px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15); text-align: center; min-width: 260px;
+}
+.reorder-confirm-msg { font-size: 17px; font-weight: 700; color: #1e2035; margin-bottom: 20px; }
+.reorder-confirm-btns { display: flex; gap: 10px; justify-content: center; }
+.reorder-confirm-btns .btn-primary {
+  background: #5500ff; color: #fff; border: none; padding: 8px 24px;
+  border-radius: 8px; font-weight: 600; cursor: pointer;
+}
+.reorder-confirm-btns .btn-primary:hover { background: #4400cc; }
 .epp-exp-header {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 14px 16px; transition: background 0.1s;

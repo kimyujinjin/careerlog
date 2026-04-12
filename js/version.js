@@ -770,6 +770,22 @@ const VersionManager = {
     document.body.insertAdjacentHTML('beforeend', html);
   },
 
+  _showReorderConfirm(onConfirm, onCancel) {
+    const overlay = document.createElement('div');
+    overlay.className = 'reorder-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="reorder-confirm-box">
+        <p class="reorder-confirm-msg">순서를 변경할까요?</p>
+        <div class="reorder-confirm-btns">
+          <button class="btn-sm" id="reorder-cancel">취소</button>
+          <button class="btn-sm btn-primary" id="reorder-ok">변경</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('reorder-ok').onclick = () => { overlay.remove(); onConfirm(); };
+    document.getElementById('reorder-cancel').onclick = () => { overlay.remove(); onCancel(); };
+  },
+
   _expOrderDragSrcId: null,
 
   onExpOrderDragStart(event, expId) {
