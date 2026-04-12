@@ -873,8 +873,38 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 .resume-wrap ul li { font-size: 15px; color: #333; margin-bottom: 5px; line-height: 1.65; }
 
 /* ── 경력 내 프로젝트 ── */
-.r-exp-projs { display: flex; flex-direction: column; gap: 24px; }
-.r-exp-proj { }
+.r-exp-projs { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 48px; }
+.r-exp-proj {
+  position: relative;
+  padding: 20px 0 20px 28px;
+}
+/* 타임라인 세로선 */
+.r-exp-proj::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e0e4ee;
+}
+/* 타임라인 도트 */
+.r-exp-proj::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 27px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #1a1a1a;
+  z-index: 1;
+}
+/* 첫 번째: 위쪽 선 숨기기 */
+.r-exp-proj:first-child::before { top: 27px; }
+/* 마지막: 아래쪽 선 숨기기 */
+.r-exp-proj:last-child::before { bottom: calc(100% - 32px); }
 .r-exp-proj__name { font-weight: 700; font-size: 16px; color: #1a1a1a; margin-bottom: 4px; }
 .r-exp-proj__meta { font-size: 15px; color: #555; display: flex; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
 .r-exp-proj__line { font-size: 15px; color: #444; line-height: 1.75; margin-bottom: 4px; }
@@ -1006,7 +1036,7 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 .exp-card:not([draggable]) .exp-card__header { padding-left: 18px; }
 .proj-card__chips--bottom { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; }
 .exp-proj-body { overflow: hidden; max-height: 320px; transition: max-height 0.3s ease; padding-bottom: 16px; }
-.exp-proj-body.expanded { max-height: 2000px; }
+.exp-proj-body.expanded { max-height: none; overflow: visible; }
 .exp-proj-more {
   display: none; align-items: center; justify-content: center;
   padding: 8px 0 14px;
@@ -1027,16 +1057,48 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 .exp-proj-add { padding: 10px 0 16px; }
 
 .list-card--proj {
-  margin-bottom: 0; padding: 20px 0;
+  margin-bottom: 0; padding: 20px 0 20px 28px;
   border-radius: 0; border: none; background: transparent;
   display: flex; flex-direction: column; align-items: flex-start; gap: 0;
-  border-bottom: 1px solid #f0f2f8;
+  border-bottom: none;
+  position: relative;
 }
-.list-card--proj:last-child { border-bottom: none; padding-bottom: 0; }
+/* 타임라인 세로선 */
+.list-card--proj::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e0e4ee;
+}
+/* 타임라인 도트 */
+.list-card--proj::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 25px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #1a1a1a;
+  z-index: 1;
+}
+/* 첫 번째 카드: 위쪽 세로선 시작점 */
+.list-card--proj:first-child::before {
+  top: 26px;
+}
+/* 마지막 카드: 아래쪽 세로선 끝점 */
+.list-card--proj:last-child::before {
+  bottom: calc(100% - 33px);
+}
+.list-card--proj:last-child { padding-bottom: 0; }
 
 .proj-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; width: 100%; }
 .proj-card__title-area { display: flex; flex-direction: column; gap: 0; }
-.proj-card__name { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+.proj-card__name { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
 .proj-card__meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 15px; color: #555; margin-bottom: 10px; }
 .proj-meta-sep { color: #ccc; }
 
