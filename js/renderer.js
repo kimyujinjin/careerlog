@@ -178,15 +178,34 @@ function renderCertifications(list) {
 
 // ── 메인 렌더 함수 ────────────────────────────────────
 const Renderer = {
+  _defaultSectionOrder: ['experiences', 'skills', 'educations', 'certifications'],
+
+  _sectionRenderers: {
+    experiences: (r) => renderExperiences(r.experiences, r.projects),
+    skills:      (r) => renderSkills(r.skills),
+    educations:  (r) => renderEducations(r.educations),
+    certifications: (r) => renderCertifications(r.certifications),
+  },
+
   render(resolvedData, templateId) {
     const { resolved, version } = resolvedData;
     const resumeTitle = version && version.resumeTitle ? version.resumeTitle : null;
-    const body =
-      renderPersonal(resolved.personal, resumeTitle) +
-      renderExperiences(resolved.experiences, resolved.projects) +
-      renderSkills(resolved.skills) +
-      renderEducations(resolved.educations) +
-      renderCertifications(resolved.certifications);
+    const order = (version && version.sectionOrder && version.sectionOrder.length > 0)
+      ? version.sectionOrder
+      : this._defaultSectionOrder;
+
+    let body = renderPersonal(resolved.personal, resumeTitle);
+    for (const key of order) {
+      const fn = this._sectionRenderers[key];
+      if (fn) body += fn(resolved);
+    }
+    // order에 포함되지 않은 섹션도 기본 순서대로 렌더
+    for (const key of this._defaultSectionOrder) {
+      if (!order.includes(key)) {
+        const fn = this._sectionRenderers[key];
+        if (fn) body += fn(resolved);
+      }
+    }
 
     return `<div class="resume-wrap template-${esc(templateId || 'modern')}">${body}</div>`;
   }
