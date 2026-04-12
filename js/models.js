@@ -128,6 +128,10 @@ function createVersion(data = {}) {
     selectedSummaryId:     data.selectedSummaryId     || null,
     selectedExperienceIds: data.selectedExperienceIds || [],
     expOrder:              data.expOrder              || [], // 버전별 경력 표시 순서 (id 배열)
+    sectionOrder:          data.sectionOrder          || [], // 섹션 표시 순서
+    skillOrder:            data.skillOrder            || [], // 스킬 그룹 표시 순서
+    eduOrder:              data.eduOrder              || [], // 학력 표시 순서
+    certOrder:             data.certOrder             || [], // 자격증 표시 순서
     selectedProjectIds:    data.selectedProjectIds    || [],
     selectedSkillGroupIds: data.selectedSkillGroupIds || [],
     selectedEducationIds:  data.selectedEducationIds  || [],
