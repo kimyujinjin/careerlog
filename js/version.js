@@ -786,6 +786,8 @@ const VersionManager = {
     document.getElementById('reorder-cancel').onclick = () => { overlay.remove(); onCancel(); };
   },
 
+  _sectionDragSrcKey: null,
+
   _expOrderDragSrcId: null,
 
   onExpOrderDragStart(event, expId) {
