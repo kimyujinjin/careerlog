@@ -1195,5 +1195,14 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
   body .app-wrapper .app-body #view-versions #version-workspace-view .version-body .version-preview > * { display: none !important; }
   body .app-wrapper .app-body #view-versions #version-workspace-view .version-body .version-preview .preview-scroll { display: block !important; }
   body .app-wrapper .app-body #view-versions #version-workspace-view .version-body .version-preview .preview-scroll #preview-frame { display: block !important; }
+  /* overflow/height 리셋 — 잘림 방지 */
+  html, body { height: auto !important; }
+  .app-wrapper { height: auto !important; overflow: visible !important; }
+  .app-body { height: auto !important; overflow: visible !important; }
+  .view { height: auto !important; }
+  .vworkspace-view { height: auto !important; overflow: visible !important; }
+  .version-body { height: auto !important; overflow: visible !important; }
+  .version-preview { height: auto !important; overflow: visible !important; }
+  .preview-scroll { height: auto !important; overflow: visible !important; }
   .resume-wrap { box-shadow: none; border-radius: 0; padding: 0; }
 }
