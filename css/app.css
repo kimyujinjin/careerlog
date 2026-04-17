@@ -1179,6 +1179,22 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 
 /* ── 인쇄 ──────────────────────────────────────────── */
 @media print {
+  /* 브라우저 기본 머리말/꼬리말을 꺼야 아래 커스텀 꼬리말이 나옵니다.
+     (인쇄 대화상자 → 설정 더보기 → "머리글 및 바닥글" 체크 해제) */
+  @page {
+    margin: 15mm 10mm 18mm;
+    @top-left { content: ""; }
+    @top-center { content: ""; }
+    @top-right { content: ""; }
+    @bottom-left { content: ""; }
+    @bottom-center {
+      content: counter(page);
+      font-family: 'Pretendard', sans-serif;
+      font-size: 10pt;
+      color: #888;
+    }
+    @bottom-right { content: ""; }
+  }
   /* 미리보기 frame 제외 모든 것 숨김 */
   body > * { display: none !important; }
   body .app-wrapper { display: block !important; }
