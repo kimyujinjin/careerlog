@@ -1223,6 +1223,24 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
   .resume-wrap { box-shadow: none; border-radius: 0; padding: 0; }
 }
 
+/* ── 경력 카드 업무설명 / 주요성과 ─────────────────── */
+.exp-card__desc {
+  font-size: 13.5px;
+  color: #374151;
+  line-height: 1.65;
+  margin: 8px 16px 0 48px;
+}
+.exp-card__achievements {
+  margin: 8px 16px 0 48px;
+  padding-left: 16px;
+  list-style: disc;
+}
+.exp-card__achievements li {
+  font-size: 13.5px;
+  color: #374151;
+  line-height: 1.7;
+}
+
 /* ── 경력 V2 카드 ───────────────────────────────────── */
 .expv2-card {
   background: #fff;

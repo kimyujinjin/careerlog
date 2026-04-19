@@ -395,6 +395,11 @@ const Editor = {
               <button class="btn-sm btn-danger" onclick="Editor.deleteExperience('${e.id}')">삭제</button>
             </div>
           </div>
+          ${e.description ? `<p class="exp-card__desc">${esc(e.description)}</p>` : ''}
+          ${(e.achievements || []).filter(Boolean).length ? `
+          <ul class="exp-card__achievements">
+            ${(e.achievements).filter(Boolean).map(a => `<li>${esc(a)}</li>`).join('')}
+          </ul>` : ''}
           <div class="exp-card__projects">
             <div class="exp-proj-header">
               <span class="exp-proj-label">주요 프로젝트</span>
