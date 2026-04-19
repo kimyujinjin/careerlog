@@ -1228,10 +1228,10 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
   font-size: 13.5px;
   color: #374151;
   line-height: 1.65;
-  margin: 8px 16px 0 48px;
+  margin: 6px 0 0;
 }
 .exp-card__achievements {
-  margin: 8px 16px 0 48px;
+  margin: 6px 0 0;
   padding-left: 16px;
   list-style: disc;
 }

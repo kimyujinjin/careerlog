@@ -389,17 +389,17 @@ const Editor = {
             <div class="exp-card__info">
               <strong class="exp-company-name">${esc(e.company)}</strong>
               ${metaParts.length ? `<div class="exp-company-meta">${metaParts.map(m => `<span>${esc(m)}</span>`).join('<span class="exp-meta-sep">|</span>')}</div>` : ''}
+              ${e.description ? `<p class="exp-card__desc">${esc(e.description)}</p>` : ''}
+              ${(e.achievements || []).filter(Boolean).length ? `
+              <ul class="exp-card__achievements">
+                ${(e.achievements).filter(Boolean).map(a => `<li>${esc(a)}</li>`).join('')}
+              </ul>` : ''}
             </div>
             <div class="exp-card__actions">
               <button class="btn-sm" onclick="Editor.openExpModal('${e.id}')">편집</button>
               <button class="btn-sm btn-danger" onclick="Editor.deleteExperience('${e.id}')">삭제</button>
             </div>
           </div>
-          ${e.description ? `<p class="exp-card__desc">${esc(e.description)}</p>` : ''}
-          ${(e.achievements || []).filter(Boolean).length ? `
-          <ul class="exp-card__achievements">
-            ${(e.achievements).filter(Boolean).map(a => `<li>${esc(a)}</li>`).join('')}
-          </ul>` : ''}
           <div class="exp-card__projects">
             <div class="exp-proj-header">
               <span class="exp-proj-label">주요 프로젝트</span>
