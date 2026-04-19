@@ -1001,7 +1001,7 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 .drag-handle:active { cursor: grabbing; }
 
 .exp-card__header {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: flex-start; gap: 12px;
   padding: 16px 18px; background: white;
   border-bottom: 1px solid #e8ebf4;
 }
