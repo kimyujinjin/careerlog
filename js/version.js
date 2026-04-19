@@ -100,6 +100,8 @@ const VersionManager = {
           ${!q ? `<button class="btn-primary mt-12" onclick="VersionManager.openCreateModal()">+ 새 버전 만들기</button>` : ''}
         </div>`
       : filtered.map(v => this._vgridCardHtml(v)).join('');
+
+    setTimeout(() => this._initThumbObserver(), 0);
   },
 
   _companyCardHtml(company, allVersions) {
@@ -262,7 +264,9 @@ const VersionManager = {
           </button>
         </div>
         <div class="vlist-card__name">${esc(v.name)}</div>
-        ${role ? `<div class="vlist-card__role">${esc(role)}</div>` : ''}
+        <div class="vlist-card__thumb-wrap" data-version-id="${v.id}">
+          <div class="vlist-card__thumb-placeholder">미리보기 준비 중…</div>
+        </div>
         <div class="vlist-card__meta">
           <div class="vlist-card__meta-row">
             <span class="vlist-card__meta-label">최종 수정</span>
@@ -274,6 +278,45 @@ const VersionManager = {
           </div>
         </div>
       </div>`;
+  },
+
+  _initThumbObserver() {
+    const thumbs = document.querySelectorAll('.vlist-card__thumb-wrap[data-version-id]');
+    if (!thumbs.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        if (el.dataset.rendered) return;
+        el.dataset.rendered = '1';
+        observer.unobserve(el);
+
+        const versionId = el.dataset.versionId;
+        const resolved = Store.resolveVersion(versionId);
+        if (!resolved) return;
+
+        const html = Renderer.render(resolved, resolved.version?.templateId || 'modern');
+        const scaler = document.createElement('div');
+        scaler.className = 'vlist-card__thumb-scaler';
+        scaler.innerHTML = html;
+        scaler.style.pointerEvents = 'none';
+        scaler.style.userSelect = 'none';
+
+        el.innerHTML = '';
+        el.appendChild(scaler);
+
+        // 카드 너비 기준으로 스케일 계산
+        requestAnimationFrame(() => {
+          const scale = el.offsetWidth / 860;
+          scaler.style.transform = `scale(${scale})`;
+          scaler.style.transformOrigin = 'top left';
+          scaler.style.width = '860px';
+        });
+      });
+    }, { rootMargin: '120px' });
+
+    thumbs.forEach(el => observer.observe(el));
   },
 
   filterGrid(query) {

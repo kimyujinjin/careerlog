@@ -419,6 +419,24 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
   overflow: hidden;
 }
 .vlist-card__notes--empty { color: #c8cfe0; font-style: italic; }
+.vlist-card__thumb-wrap {
+  flex: 1;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f4f6fb;
+  position: relative;
+  min-height: 0;
+}
+.vlist-card__thumb-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #c8cfe0;
+}
+.vlist-card__thumb-scaler {
+  position: absolute;
+  top: 0; left: 0;
+  transform-origin: top left;
+}
 
 .vlist-card__footer {
   display: flex; align-items: center; justify-content: space-between;
