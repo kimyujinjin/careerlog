@@ -862,7 +862,7 @@ input, textarea, select { font-family: inherit; font-size: 16px; }
 /* ── 경력 아이템 ── */
 .r-item { margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid #e8e8e8; }
 .r-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-.r-exp-company-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #e8e8e8; }
+.r-exp-company-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
 .r-exp-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; flex-shrink: 0; }
 .r-exp-company-info { display: flex; flex-direction: column; gap: 4px; }
 .r-company { font-weight: 800; font-size: 18px; color: #1a1a1a; }
