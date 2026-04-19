@@ -1212,4 +1212,169 @@ const Editor = {
     document.querySelectorAll('.exp-card').forEach(c => c.classList.remove('drag-over'));
     this._dragSrcId = null;
   },
+
+  // ── 경력 V2 탭 ────────────────────────────────────────
+  renderExperienceV2Tab(profile) {
+    const exps = [...(profile.experiencesV2 || [])].sort((a, b) => {
+      const aDate = a.startDate || '0000-00';
+      const bDate = b.startDate || '0000-00';
+      return bDate.localeCompare(aDate);
+    });
+
+    const buildCard = (e) => {
+      const periodStr = formatPeriod(e.startDate, e.endDate, e.isCurrent);
+      const roleTeam = [e.role, e.team ? `@${e.team}` : ''].filter(Boolean).join('  ');
+      const itemsHtml = (e.items || []).length === 0
+        ? ''
+        : `<ul class="expv2-card__items">${(e.items).map(item =>
+            `<li>${esc(item.name)}</li>`).join('')}</ul>`;
+
+      return `
+        <div class="expv2-card" data-id="${e.id}">
+          <div class="expv2-card__header">
+            <div class="expv2-card__title-area">
+              <strong class="expv2-card__company">${esc(e.company)}</strong>
+              <span class="expv2-card__period">${esc(periodStr)}</span>
+            </div>
+            <div class="expv2-card__actions">
+              <button class="btn-sm" onclick="Editor.openExpV2Modal('${e.id}')">편집</button>
+              <button class="btn-sm btn-danger" onclick="Editor.deleteExperienceV2('${e.id}')">삭제</button>
+            </div>
+          </div>
+          ${roleTeam ? `<div class="expv2-card__role">${esc(roleTeam)}</div>` : ''}
+          ${e.summary ? `<p class="expv2-card__summary">${esc(e.summary)}</p>` : ''}
+          ${itemsHtml}
+        </div>`;
+    };
+
+    return `
+    <div class="exp-tab-section">
+      <div class="section-header">
+        <h3>경력 V2</h3>
+        <button class="btn-primary" onclick="Editor.openExpV2Modal()">+ 경력 추가</button>
+      </div>
+      <p class="section-desc">회사명 · 직책 @팀 · 요약 · 프로젝트 목록 형식의 간결한 경력 카드입니다.</p>
+      ${exps.length === 0
+        ? '<p class="empty-msg">아직 경력이 없습니다. 위 버튼으로 추가하세요.</p>'
+        : `<div id="expv2-list">${exps.map(buildCard).join('')}</div>`}
+    </div>`;
+  },
+
+  openExpV2Modal(id) {
+    const profile = Store.getProfile();
+    const e = id ? (profile.experiencesV2 || []).find(x => x.id === id) : createExperienceV2();
+    if (!e) return;
+    const isNew = !id;
+
+    const itemsHtml = (e.items.length ? e.items : [createExperienceV2Item()]).map(item => `
+      <div class="bullet-row">
+        <input class="bullet-input ev2-item-input" data-item-id="${esc(item.id)}" value="${esc(item.name)}" placeholder="• 프로젝트 또는 업무명">
+        <button class="btn-icon" onclick="Editor.removeBullet(this)">−</button>
+      </div>`).join('');
+
+    const html = `
+    <div class="modal-overlay" id="expv2-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>${isNew ? '경력 V2 추가' : '경력 V2 편집'}</h3>
+          <button class="modal-close" onclick="closeModal('expv2-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="ev2-id" value="${esc(e.id)}">
+          <div class="form-row">
+            <label>회사명 *</label>
+            <input id="ev2-company" value="${esc(e.company)}" placeholder="에이아이트릭스">
+          </div>
+          <div class="form-row-group">
+            <div class="form-row">
+              <label>시작일</label>
+              <input id="ev2-start" type="month" value="${esc(e.startDate)}">
+            </div>
+            <div class="form-row">
+              <label>종료일</label>
+              <input id="ev2-end" type="month" value="${esc(e.endDate)}" ${e.isCurrent ? 'disabled' : ''}>
+              <label class="checkbox-label">
+                <input type="checkbox" id="ev2-current" ${e.isCurrent ? 'checked' : ''}
+                  onchange="document.getElementById('ev2-end').disabled=this.checked"> 재직 중
+              </label>
+            </div>
+          </div>
+          <div class="form-row-group">
+            <div class="form-row">
+              <label>직책</label>
+              <input id="ev2-role" value="${esc(e.role)}" placeholder="프로덕트 디자인 리드">
+            </div>
+            <div class="form-row">
+              <label>팀명</label>
+              <input id="ev2-team" value="${esc(e.team)}" placeholder="프로덕트팀">
+            </div>
+          </div>
+          <div class="form-row form-row--full">
+            <label>요약 (한 문단)</label>
+            <textarea id="ev2-summary" rows="3" placeholder="이 회사에서 무엇을 했는지 간결하게 설명하세요.">${esc(e.summary)}</textarea>
+          </div>
+          <div class="form-row form-row--full">
+            <label>프로젝트 / 업무 목록</label>
+            <div id="ev2-items">${itemsHtml}</div>
+            <button class="btn-sm mt-4" onclick="Editor.addExpV2Item()">+ 항목 추가</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-ghost" onclick="closeModal('expv2-modal')">취소</button>
+          <button class="btn-primary" onclick="Editor.saveExperienceV2()">저장</button>
+        </div>
+      </div>
+    </div>`;
+
+    document.body.insertAdjacentHTML('beforeend', html);
+  },
+
+  addExpV2Item() {
+    const item = createExperienceV2Item();
+    const html = `
+      <div class="bullet-row">
+        <input class="bullet-input ev2-item-input" data-item-id="${item.id}" value="" placeholder="• 프로젝트 또는 업무명">
+        <button class="btn-icon" onclick="Editor.removeBullet(this)">−</button>
+      </div>`;
+    document.getElementById('ev2-items').insertAdjacentHTML('beforeend', html);
+  },
+
+  saveExperienceV2() {
+    const id = document.getElementById('ev2-id').value;
+    const items = [...document.querySelectorAll('#ev2-items .ev2-item-input')]
+      .map(input => ({ id: input.dataset.itemId || uuid(), name: input.value.trim() }))
+      .filter(item => item.name);
+
+    const exp = createExperienceV2({
+      id,
+      company:   document.getElementById('ev2-company').value.trim(),
+      startDate: document.getElementById('ev2-start').value,
+      endDate:   document.getElementById('ev2-end').value,
+      isCurrent: document.getElementById('ev2-current').checked,
+      role:      document.getElementById('ev2-role').value.trim(),
+      team:      document.getElementById('ev2-team').value.trim(),
+      summary:   document.getElementById('ev2-summary').value.trim(),
+      items,
+    });
+
+    const profile = Store.getProfile();
+    if (!profile.experiencesV2) profile.experiencesV2 = [];
+    const idx = profile.experiencesV2.findIndex(e => e.id === id);
+    if (idx >= 0) profile.experiencesV2[idx] = exp;
+    else profile.experiencesV2.unshift(exp);
+    Store.saveProfile(profile);
+
+    closeModal('expv2-modal');
+    App.renderMasterTab('experience-v2');
+    showToast('경력 V2가 저장되었습니다.');
+  },
+
+  deleteExperienceV2(id) {
+    if (!confirm('이 경력을 삭제하시겠습니까?')) return;
+    const profile = Store.getProfile();
+    profile.experiencesV2 = (profile.experiencesV2 || []).filter(e => e.id !== id);
+    Store.saveProfile(profile);
+    App.renderMasterTab('experience-v2');
+    showToast('삭제되었습니다.');
+  },
 };

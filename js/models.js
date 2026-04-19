@@ -18,6 +18,7 @@ function createProfile(data = {}) {
     titles:         data.titles         || [],
     summaries:      data.summaries      || [],
     experiences:    data.experiences    || [],
+    experiencesV2:  data.experiencesV2  || [],
     projects:       data.projects       || [],
     skills:         data.skills         || [],
     educations:     data.educations     || [],
@@ -73,6 +74,27 @@ function createProject(data = {}) {
     achievements: data.achievements || [],
     techStack: data.techStack || [],
     tags: data.tags || [],
+  };
+}
+
+function createExperienceV2(data = {}) {
+  return {
+    id: data.id || uuid(),
+    company: data.company || '',
+    startDate: data.startDate || '',
+    endDate: data.endDate || '',
+    isCurrent: data.isCurrent || false,
+    role: data.role || '',
+    team: data.team || '',
+    summary: data.summary || '',
+    items: data.items || [],  // [{ id, name }]
+  };
+}
+
+function createExperienceV2Item(data = {}) {
+  return {
+    id: data.id || uuid(),
+    name: data.name || '',
   };
 }
 

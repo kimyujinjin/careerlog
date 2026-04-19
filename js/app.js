@@ -1,7 +1,7 @@
 // ── 앱 진입점 ─────────────────────────────────────────
 const App = {
   currentView: localStorage.getItem('activeView') || 'master',
-  currentMasterTab: (['personal','summary','experience','project'].includes(localStorage.getItem('activeTab')) ? localStorage.getItem('activeTab') : 'personal'),
+  currentMasterTab: (['personal','summary','experience','experience-v2','project'].includes(localStorage.getItem('activeTab')) ? localStorage.getItem('activeTab') : 'personal'),
 
   init() {
     const profile = Store.getProfile();
@@ -101,8 +101,9 @@ const App = {
     const tabs = [
       { id: 'personal',   label: '👤 개인정보' },
       { id: 'summary',    label: '📝 자기소개' },
-      { id: 'experience', label: '💼 경력' },
-      { id: 'project',    label: '🚀 독립 프로젝트' },
+      { id: 'experience',    label: '💼 경력' },
+      { id: 'experience-v2', label: '💼 경력 V2' },
+      { id: 'project',       label: '🚀 독립 프로젝트' },
     ];
     document.getElementById('master-tab-bar').innerHTML = tabs.map(t =>
       `<button class="master-tab-btn ${t.id === this.currentMasterTab ? 'active' : ''}"
@@ -118,8 +119,9 @@ const App = {
     const content = {
       personal:   () => Editor.renderPersonalTab(profile),
       summary:    () => Editor.renderSummaryTab(profile),
-      experience: () => Editor.renderExperienceTab(profile),
-      project:    () => Editor.renderProjectTab(profile),
+      experience:    () => Editor.renderExperienceTab(profile),
+      'experience-v2': () => Editor.renderExperienceV2Tab(profile),
+      project:       () => Editor.renderProjectTab(profile),
       skill:      () => Editor.renderSkillTab(profile),
       education:  () => Editor.renderEducationTab(profile),
     }[tabId]?.() || '';
