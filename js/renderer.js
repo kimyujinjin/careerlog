@@ -99,10 +99,10 @@ function renderExperiences(experiences, projects) {
         <div class="r-exp-company-info">
           <span class="r-company">${esc(e.company)}</span>
           ${metaParts.length ? `<p class="r-exp-meta">${metaParts.join('<span class="r-meta-sep"> | </span>')}</p>` : ''}
+          ${e.description ? `<p class="r-desc">${esc(e.description).replace(/\n/g,'<br>')}</p>` : ''}
+          ${e.achievements && e.achievements.filter(Boolean).length ? bulletList(e.achievements) : ''}
         </div>
       </div>
-      ${e.description ? `<p class="r-desc">${esc(e.description).replace(/\n/g,'<br>')}</p>` : ''}
-      ${e.achievements && e.achievements.filter(Boolean).length ? bulletList(e.achievements) : ''}
       ${projBlock}
     </div>`;
   }).join('');
