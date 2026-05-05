@@ -122,7 +122,7 @@ function renderExperiences(experiences, projects) {
   // 총 경력 계산 (겹치는 기간 제거)
   const intervals = experiences.map(e => {
     const s = e.startDate ? new Date(e.startDate.length === 7 ? e.startDate + '-01' : e.startDate) : null;
-    const en = e.isCurrent ? new Date() : (e.endDate ? new Date(e.endDate.length === 7 ? e.endDate + '-01' : e.endDate) : null);
+    const en = e.isCurrent ? new Date() : (e.endDate ? (e.endDate.length === 7 ? (() => { const d = new Date(e.endDate + '-01'); d.setMonth(d.getMonth() + 1); return d; })() : new Date(e.endDate)) : null);
     return (s && en && en >= s) ? [s.getTime(), en.getTime()] : null;
   }).filter(Boolean).sort((a,b) => a[0]-b[0]);
   let totalMs = 0;
